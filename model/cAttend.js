@@ -14,7 +14,20 @@ const cAttendSchema = new Schema({
     sessionNumber: {
         type: Number,
         required: true,
-    }
+    },
+    teacherLatitude: {
+        type: Number,
+        required: true,
+    },
+    teacherLongitude: {
+        type: Number,
+        required: true,
+    },
+    isActive: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
 });
 cAttendSchema.virtual("id").get(function(){
     return this._id.toHexString

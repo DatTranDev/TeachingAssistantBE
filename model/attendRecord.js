@@ -14,9 +14,17 @@ const attendRecordSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['CP', 'KP', 'C'],  
+        enum: ['CP', 'KP', 'CM'],  
         required: true,
-    }
+    },
+    studentLatitude: {
+        type: Number,
+        required: true,
+    },
+    studentLongitude: {
+        type: Number,
+        required: true,
+    },
 }, {
     timestamps: true
 });

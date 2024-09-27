@@ -18,6 +18,11 @@ const addQuestion = async(req, res)=>{
         });
     }
     const isValidId2 = await helper.isValidObjectID(req.body.studentId);
+    if(!isValidId2){
+        return res.status(400).json({
+            message: "Invalid student id"
+        });
+    }
     const existUser = await User.findOne({
         _id: req.body.studentId
     });

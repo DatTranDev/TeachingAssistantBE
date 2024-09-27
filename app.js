@@ -11,6 +11,7 @@ const classSessionRoute = require('./route/classSession_route.js');
 const questionRoute = require('./route/question_route.js');
 const channelRoute = require('./route/channel_route.js');   
 const cAttendRoute = require('./route/cAttend_route.js');
+const reviewRoute = require('./route/review_route.js');
 const http = require('http').createServer(app);
 
 require('dotenv').config();
@@ -50,5 +51,6 @@ app.use(`${api}/classSession`, classSessionRoute);
 app.use(`${api}/question`, questionRoute);
 app.use(`${api}/channel`, channelRoute);
 app.use(`${api}/cAttend`, cAttendRoute);
+app.use(`${api}/review`, reviewRoute);
 //  Socket
 const { Server } = require('socket.io');

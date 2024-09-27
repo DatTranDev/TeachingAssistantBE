@@ -99,6 +99,16 @@ const updateSubject = async(req, res)=>{
             message: "Subject is not found"
         });
     }
+    if(req.body.joinCode){
+        return res.status(400).json({
+            message: "Join code is not allowed to update"
+        });
+    }
+    if(req.body.hostId){
+        return res.status(400).json({
+            message: "Host id is not allowed to update"
+        });
+    }
     await Subject.findByIdAndUpdate(req.params.id, req.body).then((subject)=>{
         return res.status(200).json({
             message: "Subject is updated successfully"

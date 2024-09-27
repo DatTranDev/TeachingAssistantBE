@@ -23,7 +23,16 @@ const addAttendRecord = async (req, res) => {
             message: "Student is not found"
         });
     }
-    
+    const lat1 = existCAttend.teacherLatitude;
+    const lon1 = existCAttend.teacherLongitude;
+    const lat2 = req.body.studentLatitude;
+    const lon2 = req.body.studentLongitude;
+    if(helper.isPresent(helper.getDistanceInKm(lat1, lon1, lat2, lon2))){
+        req.body.status = "CM";
+    }else{
+        req.body.status = "KP";
+    }
+
     const newAttendRecord = new AttendRecord(req.body);
     await newAttendRecord.save().then((attendRecord) => {
         return res.status(201).json({

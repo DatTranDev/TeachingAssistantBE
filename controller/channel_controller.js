@@ -29,6 +29,8 @@ const addChannel = async(req, res)=>{
             });
         });
 }
+const addManyChannels = async(req, res)=>{
+}
 const findBySubjectId = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.params.subjectId);
     if(!isValidId){
@@ -64,6 +66,11 @@ const updateChannel = async(req, res)=>{
     if(!existChannel){
         return res.status(404).json({
             message: "Channel is not found"
+        });
+    }
+    if(req.body.subjectId){
+        return res.status(400).json({
+            message: "Subject id cannot be updated"
         });
     }
     await Channel.updateOne({
