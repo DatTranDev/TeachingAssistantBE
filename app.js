@@ -54,3 +54,49 @@ app.use(`${api}/cAttend`, cAttendRoute);
 app.use(`${api}/review`, reviewRoute);
 //  Socket
 const { Server } = require('socket.io');
+const io = new Server(http, {
+    cors: {
+        origin: '*',
+    }
+});
+io.on('connection', (socket) => {
+    console.log(`${socket.id} connected`);
+    
+    socket.on("joinSubject", ({ userID, subjectID }) => {
+        socket.join(subjectID);  
+        console.log(`${userID} joined subject room: ${subjectID}`);
+        
+    });
+
+    socket.on("joinSubjectChannel", ({ userID, subjectID, channelID }) => {
+        const roomName = `${subjectID}_${channelID}`;  
+
+        socket.join(roomName);
+        console.log(`${userID} joined channel room: ${roomName}`);       
+    });
+
+    socket.on("sendMessageToSubject", ({ subjectID, message, senderID }) => {
+
+        io.to(subjectID).emit("receiveSubjectMessage", message);
+        console.log(`Message from ${senderID} sent to subject room: ${subjectID}`);
+    });
+
+    socket.on("sendMessageToChannel", ({ subjectID, channelID, message, senderID }) => {
+        const roomName = `${subjectID}_${channelID}`;  
+
+        io.to(roomName).emit("receiveChannelMessage", message);
+        console.log(`Message from ${senderID} sent to channel room: ${roomName}`);
+    });
+
+    socket.on("leaveSubjectChannel", ({ userID, subjectID, channelID }) => {
+        const roomName = `${subjectID}_${channelID}`;
+        socket.leave(roomName);
+        console.log(`${userID} left room: ${roomName}`);
+
+    });
+    socket.on("leaveSubject", ({ userID, subjectID }) => {
+        socket.leave(subjectID);
+        console.log(`${userID} left room: ${subjectID}`);
+    });
+
+});
