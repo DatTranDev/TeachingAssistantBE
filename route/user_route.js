@@ -7,4 +7,5 @@ route.post('/register', userController.regegister);
 route.patch('/changepassword', userController.changePassword);
 route.post('/login', userController.login);
 route.patch('/update/:id', auth.authenticateToken, userController.updateUser);
+
 module.exports = route;

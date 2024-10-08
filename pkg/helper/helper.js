@@ -2,15 +2,31 @@ const validator = require('validator')
 const mongoose = require("mongoose")
 
 const isValidEmail =async  (email)=>{
-    return await validator.isEmail(email)
+    try{
+        return await validator.isEmail(email)
+    }
+    catch
+    {
+        return false;
+    }
 }
 
 const isValidPhoneNumber = async (phoneNumber) =>{
-    return await validator.isMobilePhone(phoneNumber)
+    try{
+        return await validator.isMobilePhone(phoneNumber)
+    }
+    catch{
+        return false
+    }
 }
 
 const isValidObjectID = async (id) =>{
-    return await mongoose.isValidObjectId(id)
+    try{
+        return await mongoose.isValidObjectId(id)
+    }
+    catch{
+        return false
+    }
 }
 
 const randomCode =()=>{
