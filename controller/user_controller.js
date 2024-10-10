@@ -3,7 +3,7 @@ const bcrypt = require("../pkg/auth/authorization.js");
 const auth = require('../pkg/auth/authentication.js');
 const helper = require('../pkg/helper/helper.js');
 const tokenController = require('./token_controller.js');
-const regegister = async(req, res)=>{
+const register = async(req, res)=>{
     const isValidEmail = await helper.isValidEmail(req.body.email);
     if(!isValidEmail){
         return res.status(400).json({
@@ -33,7 +33,7 @@ const regegister = async(req, res)=>{
     const resUser = await User.findById(userId).select('-password');
     const accessToken = await auth.generateToken(newUser, '1h', 'access');
     const refreshToken = await auth.generateToken(newUser, '30d', 'refresh');
-    tokenController.addNewToken(refreshToken, newUser._id);
+    await tokenController.addNewToken(refreshToken, newUser._id);
     return res.status(201).json({
         user: resUser,
         accessToken: accessToken,
@@ -122,4 +122,4 @@ const changePassword = async(req, res)=>{
 
 
 
-module.exports = {regegister, login, updateUser, changePassword}
+module.exports = {register, login, updateUser, changePassword}
