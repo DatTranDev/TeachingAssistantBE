@@ -1,6 +1,7 @@
 const Subject = require('../model/subject.js');
 const User = require('../model/user.js');
 const UserSubject = require('../model/userSubject.js');
+const tokenController = require('./token_controller.js');
 const helper = require('../pkg/helper/helper.js');
 
 const addSubject = async(req, res)=>{
@@ -14,6 +15,7 @@ const addSubject = async(req, res)=>{
     }
     const userIdFromToken = req.user.userId;
     if(userIdFromToken != req.body.hostId){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });
@@ -78,6 +80,7 @@ const joinSubject = async(req, res)=>{
     }
     const userIdFromToken = req.user.userId;
     if(userIdFromToken != req.body.studentId){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });
@@ -107,6 +110,7 @@ const updateSubject = async(req, res)=>{
     });
     const userIdFromToken = req.user.userId;
     if(userIdFromToken !== existSubject.hostId.toString()){  
+        await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });
@@ -149,6 +153,7 @@ const deleteSubject = async(req, res)=>{
     });
     const userIdFromToken = req.user.userId;
     if(userIdFromToken !== existSubject.hostId.toString()){  
+        await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });

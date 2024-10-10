@@ -12,7 +12,14 @@ route.get("/refresh-token", async (req,res)=>{
     })
 })
 
-route.delete("/deleteall", async (req,res)=>{
+route.delete("/deleteall/:key", async (req,res)=>{
+    const SECRET_KEY = process.env.SECRET_KEY;
+    const key = req.params.key
+    if(key !== SECRET_KEY){
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
     await tokenController.deleteAllToken()
     return res.json({
         message: "Deleted successfully"

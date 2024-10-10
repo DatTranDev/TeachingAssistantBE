@@ -2,6 +2,7 @@ const AttendRecord = require('../model/attendRecord.js');
 const User = require('../model/user.js');
 const CAttend = require('../model/cAttend.js');
 const helper = require('../pkg/helper/helper.js');
+const tokenController = require('./token_controller.js');
 
 const addAttendRecord = async (req, res) => {
     const isValidId = await helper.isValidObjectID(req.body.cAttendId);
@@ -21,6 +22,13 @@ const addAttendRecord = async (req, res) => {
     if (!existStudent) {
         return res.status(404).json({
             message: "Student is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if (userIdFromToken != req.body.studentId) {
+        await tokenController.deleteTokenByUserID(userIdFromToken);
+        return res.status(403).json({
+            message: "Unauthorized action"
         });
     }
     const lat1 = existCAttend.teacherLatitude;

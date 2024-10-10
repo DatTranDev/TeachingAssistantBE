@@ -4,6 +4,7 @@ const User = require('../model/user.js');
 const Subject = require('../model/subject.js');
 const UserSubject = require('../model/userSubject.js');
 const ClassSession = require('../model/classSession.js');
+const tokenController = require('./token_controller.js');
 
 const addCAttend = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.body.classSessionId);
@@ -18,6 +19,22 @@ const addCAttend = async(req, res)=>{
     if(!existClassSession){
         return res.status(404).json({
             message: "Class session is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    const userSubject = await UserSubject.findOne({
+        studentId: userIdFromToken,
+        subjectId: existClassSession.subjectId
+    });
+    if(!userSubject){
+        return res.status(404).json({
+            message: "User is not in the subject"
+        });
+    }
+    if(userSubject.role != 'teacher'){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
+        return res.status(403).json({
+            message: "Unauthorized action"
         });
     }
     const newCAttend = new CAttend(req.body);

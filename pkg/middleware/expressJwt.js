@@ -14,12 +14,12 @@ const authJWT = ()=>{
             `${api}/user/login`,
             `${api}/user/changepassword`,
             `${api}/service/sendEmail`,
-            `${api}/token/deleteall`
+            new RegExp(`${api}/token/deleteall/.*`)
         ]
     })
 }
 
-isRevoked = async (req,token)=>{
+const isRevoked = async (req,token)=>{
     const tokenString = getTokenFromJWT(token)
     const isRevokedToken = await tokenController.checkTokenIsRevoked(tokenString)
     return isRevokedToken

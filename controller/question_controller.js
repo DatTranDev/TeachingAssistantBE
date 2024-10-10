@@ -1,6 +1,8 @@
 const Question = require('../model/question.js');
 const Subject = require('../model/subject.js');
 const User = require('../model/user.js');
+const tokenController = require('./token_controller.js');
+const UserSubject = require('../model/userSubject.js');
 
 const addQuestion = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.body.subjectId);
@@ -29,6 +31,22 @@ const addQuestion = async(req, res)=>{
     if(!existUser){
         return res.status(404).json({
             message: "User is not found"
+        });
+    }
+    const userSubject = await UserSubject.findOne({
+        studentId: req.body.studentId,
+        subjectId: req.body.subjectId
+    });
+    if(!userSubject){
+        return res.status(404).json({
+            message: "User is not in the subject"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken != req.body.studentId){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
+        return res.status(403).json({
+            message: "Unauthorized action"
         });
     }
     const newQuestion = new Question(req.body);
@@ -82,6 +100,22 @@ const deleteQuestion = async(req, res)=>{
     if(!existQuestion){
         return res.status(404).json({
             message: "Question is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    const userSubject = await UserSubject.findOne({
+        studentId: userIdFromToken,
+        subjectId: existQuestion.subjectId
+    });
+    if(!userSubject){
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
+    if(userSubject.role == "student" && userIdFromToken != existQuestion.studentId){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
+        return res.status(403).json({
+            message: "Unauthorized action"
         });
     }
     await Question.findByIdAndDelete(req.params.id).then((question)=>{

@@ -75,6 +75,7 @@ const updateUser = async(req, res)=>{
     const existUser = await User.findById(id);
     // Check if the user ID from the token matches the user ID of the account being modified
     if (existUser._id.toString() !== userIdFromToken) {
+        await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({ message: "Unauthorized action" });
     }
     if(req.body.password != null) return res.status(400).json({

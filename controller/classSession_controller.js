@@ -2,6 +2,7 @@ const ClassSession = require('../model/classSession.js');
 const User = require('../model/user.js');
 const Subject = require('../model/subject.js');
 const UserSubject = require('../model/userSubject.js');
+const tokenController = require('./token_controller.js');
 const helper = require('../pkg/helper/helper.js');
 
 const addClassSession = async(req, res)=>{
@@ -14,6 +15,13 @@ const addClassSession = async(req, res)=>{
     const existSubject = await Subject.findOne({
         _id: req.body.subjectId
     });
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken != existSubject.hostId){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
     if(!existSubject){
         return res.status(404).json({
             message: "Subject is not found"
@@ -47,7 +55,13 @@ const findByUserId = async(req, res)=>{
             message: "User is not found"
         });
     }
-
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken != req.params.userId){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
     const userSubjects = await UserSubject.find({
         userId: req.params.userId
     });
@@ -81,6 +95,7 @@ const findByUserId = async(req, res)=>{
 const updateClassSession = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.params.id);
     if(!isValidId){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(400).json({
             message: "Invalid class session id"
         });
@@ -91,6 +106,22 @@ const updateClassSession = async(req, res)=>{
     if(!existClassSession){
         return res.status(404).json({
             message: "Class session is not found"
+        });
+    }
+    const subjectId = req.body.subjectId;
+    if(subjectId){
+        res.status(400).json({
+            message: "Subject id cannot be updated"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    const subject = await Subject.findOne({
+        _id: existClassSession.subjectId
+    });
+    if(userIdFromToken != subject.hostId.toString()){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
+        return res.status(403).json({
+            message: "Unauthorized action"
         });
     }
     await ClassSession.findByIdAndUpdate(req.params.id, req.body).then((classSession)=>{
@@ -117,6 +148,16 @@ const deleteClassSession = async(req, res)=>{
     if(!existClassSession){
         return res.status(404).json({
             message: "Class session is not found"
+        });
+    }
+    const subject = await Subject.findOne({
+        _id: existClassSession.subjectId
+    });
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken != subject.hostId.toString()){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
+        return res.status(403).json({
+            message: "Unauthorized action"
         });
     }
     await ClassSession.findByIdAndDelete(req.params.id).then(()=>{
