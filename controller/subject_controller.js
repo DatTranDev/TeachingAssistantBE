@@ -4,6 +4,33 @@ const UserSubject = require('../model/userSubject.js');
 const helper = require('../pkg/helper/helper.js');
 
 const addSubject = async(req, res)=>{
+    const existUser = await User.findOne({
+        _id: req.body.hostId
+    });
+    if(!existUser){
+        return res.status(404).json({
+            message: "User is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken != req.body.hostId){
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
+    const startDay = new Date(req.body.startDay);
+    const endDay = new Date(req.body.endDay);
+    
+    if(isNaN(startDay.getTime()) || isNaN(endDay.getTime())){
+        return res.status(400).json({
+            message: "Invalid date format, following dd/mm/yyyy"
+        });
+    }
+    if(startDay.getTime() > endDay.getTime()){
+        return res.status(400).json({
+            message: "Start day must be before end day"
+        });
+    }
     let newSubject = new Subject(req.body);
     while(true){
         let subjectCode = helper.randomCode();
@@ -14,28 +41,6 @@ const addSubject = async(req, res)=>{
             newSubject.joinCode = subjectCode;
             break;
         }
-    }
-    const existUser = await User.findOne({
-        _id: req.body.hostId
-    });
-    if(!existUser){
-        return res.status(404).json({
-            message: "User is not found"
-        });
-    }
-
-    const startDay = new Date(req.body.startDay);
-    const endDay = new Date(req.body.endDay);
-
-    if(isNaN(startDay.getTime()) || isNaN(endDay.getTime())){
-        return res.status(400).json({
-            message: "Invalid date format, following dd/mm/yyyy"
-        });
-    }
-    if(startDay.getTime() > endDay.getTime()){
-        return res.status(400).json({
-            message: "Start day must be before end day"
-        });
     }
     const subject = await newSubject.save().catch(
         err=>{
@@ -71,6 +76,12 @@ const joinSubject = async(req, res)=>{
             message: "Student is not found"
         });
     }
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken != req.body.studentId){
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
     const userSubject = new UserSubject(req.body);
     await userSubject.save().then(
         userSubject=>{
@@ -94,6 +105,12 @@ const updateSubject = async(req, res)=>{
     const existSubject = await Subject.findOne({
         _id: req.params.id
     });
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken !== existSubject.hostId.toString()){  
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
     if(!existSubject){
         return res.status(404).json({
             message: "Subject is not found"
@@ -130,6 +147,12 @@ const deleteSubject = async(req, res)=>{
     const existSubject = await Subject.findOne({
         _id: req.params.id
     });
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken !== existSubject.hostId.toString()){  
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
     if(!existSubject){
         return res.status(404).json({
             message: "Subject is not found"

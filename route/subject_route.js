@@ -1,10 +1,11 @@
 const express = require('express');
 const route = express.Router();
 const subjectController = require('../controller/subject_controller.js');
+const auth = require('../pkg/auth/authentication.js');
 
-route.post('/add', subjectController.addSubject);
-route.post('/join', subjectController.joinSubject);
-route.patch('/update/:id', subjectController.updateSubject);
-route.delete('/delete/:id', subjectController.deleteSubject);
+route.post('/add',auth.authenticateToken, subjectController.addSubject);
+route.post('/join',auth.authenticateToken, subjectController.joinSubject);
+route.patch('/update/:id',auth.authenticateToken, subjectController.updateSubject);
+route.delete('/delete/:id',auth.authenticateToken, subjectController.deleteSubject);
 
 module.exports = route;
