@@ -55,6 +55,18 @@ const addSubject = async(req, res)=>{
         subjectId: subject._id,
         role: "teacher"
     });
+    await userSubject.save().then(
+        userSubject=>{
+            return res.status(201).json({
+                subject: subject,
+                userSubject: userSubject
+            });
+        }).catch(
+            err=>{
+                return res.status(500).json({
+                    message: "Internal server error: "+err
+                });
+            });
     
 }
 const joinSubject = async(req, res)=>{
