@@ -53,7 +53,7 @@ const addSubject = async(req, res)=>{
     const userSubject = new UserSubject({
         userId: req.body.hostId,
         subjectId: subject._id,
-        role
+        role: "teacher"
     });
     
 }
