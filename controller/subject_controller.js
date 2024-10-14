@@ -4,6 +4,17 @@ const UserSubject = require('../model/userSubject.js');
 const tokenController = require('./token_controller.js');
 const helper = require('../pkg/helper/helper.js');
 
+const parseDate = (dateString) => {
+    const parts = dateString.split('/');
+    if (parts.length !== 3) {
+        return NaN;
+    }
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Months are zero-based in JavaScript
+    const year = parseInt(parts[2], 10);
+    return new Date(year, month, day);
+};
+
 const addSubject = async(req, res)=>{
     const existUser = await User.findOne({
         _id: req.body.hostId
@@ -13,15 +24,17 @@ const addSubject = async(req, res)=>{
             message: "User is not found"
         });
     }
-    const userIdFromToken = req.user.userId;
-    if(userIdFromToken != req.body.hostId){
+    const userIdFromToken = req.user.userId;    
+    if (userIdFromToken != req.body.hostId) {
         await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });
     }
-    const startDay = new Date(req.body.startDay);
-    const endDay = new Date(req.body.endDay);
+    
+    const startDay = parseDate(req.body.startDay);
+    const endDay = parseDate(req.body.endDay);
+
     
     if(isNaN(startDay.getTime()) || isNaN(endDay.getTime())){
         return res.status(400).json({
@@ -33,6 +46,8 @@ const addSubject = async(req, res)=>{
             message: "Start day must be before end day"
         });
     }
+    req.body.startDay = startDay;
+    req.body.endDay = endDay;
     let newSubject = new Subject(req.body);
     while(true){
         let subjectCode = helper.randomCode();
@@ -142,6 +157,27 @@ const updateSubject = async(req, res)=>{
             message: "Host id is not allowed to update"
         });
     }
+    if(req.body.startDay){
+        req.body.startDay = parseDate(req.body.startDay);
+        if (isNaN(req.body.startDay.getTime())) {
+            return res.status(400).json({
+                message: "Invalid date format, following dd/mm/yyyy"
+            });
+        }
+    }
+    if(req.body.endDay){
+        req.body.endDay = parseDate(req.body.endDay);
+        if (isNaN(req.body.endDay.getTime())) {
+            return res.status(400).json({
+                message: "Invalid date format, following dd/mm/yyyy"
+            });
+        }
+    }
+    if(req.body.startDay && req.body.endDay && req.body.startDay.getTime() > req.body.endDay.getTime()){
+        return res.status(400).json({
+            message: "Start day must be before end day"
+        });
+    }
     await Subject.findByIdAndUpdate(req.params.id, req.body).then((subject)=>{
         return res.status(200).json({
             message: "Subject is updated successfully"
@@ -178,5 +214,38 @@ const deleteSubject = async(req, res)=>{
     
     
 }
+const findByUserId = async(req, res)=>{
+    const isValidId = await helper.isValidObjectID(req.params.userId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid user id"
+        });
+    }
+    const existUser = await User.findById(req.params.userId);
+    if(!existUser){
+        return res.status(404).json({
+            message: "User is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken != req.params.userId){
+        await tokenController.deleteTokenByUserID(userIdFromToken);
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
+    const userSubjects = await UserSubject.find({
+        userId: req.params.userId
+    });
+    const subjectIds = userSubjects.map(userSubject=>userSubject.subjectId);
+    const subjects = await Subject.find({
+        _id: {
+            $in: subjectIds
+        }
+    });
+    return res.status(200).json({
+        subjects: subjects
+    });
+}
 
-module.exports = {addSubject, joinSubject, updateSubject, deleteSubject};
+module.exports = {addSubject, joinSubject, updateSubject, deleteSubject, findByUserId};
