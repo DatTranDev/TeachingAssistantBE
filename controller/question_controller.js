@@ -1,6 +1,7 @@
 const Question = require('../model/question.js');
 const Subject = require('../model/subject.js');
 const User = require('../model/user.js');
+const helper = require('../pkg/helper/helper.js');
 const tokenController = require('./token_controller.js');
 const UserSubject = require('../model/userSubject.js');
 
@@ -33,20 +34,20 @@ const addQuestion = async(req, res)=>{
             message: "User is not found"
         });
     }
-    const userSubject = await UserSubject.findOne({
-        studentId: req.body.studentId,
-        subjectId: req.body.subjectId
-    });
-    if(!userSubject){
-        return res.status(404).json({
-            message: "User is not in the subject"
-        });
-    }
     const userIdFromToken = req.user.userId;
     if(userIdFromToken != req.body.studentId){
         await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
+        });
+    }
+    const userSubject = await UserSubject.findOne({
+        userId: req.body.studentId,
+        subjectId: req.body.subjectId
+    });
+    if(!userSubject){
+        return res.status(404).json({
+            message: "User is not in the subject"
         });
     }
     const newQuestion = new Question(req.body);
@@ -76,9 +77,23 @@ const updateQuestion = async(req, res)=>{
             message: "Question is not found"
         });
     }
-    await Question.findByIdAndUpdate(req.params.id, req.body).then((question)=>{
+    const userIdFromToken = req.user.userId;
+    const userSubject = await UserSubject.findOne({
+        userId: userIdFromToken,
+        subjectId: existQuestion.subjectId,
+        role: "teacher"
+    });
+    if(!userSubject){
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
+    const status = req.body.isResolved;
+
+    await Question.findByIdAndUpdate(req.params.id, {isResolved: status}).then((question)=>{
         return res.status(200).json({
-            message: "Question is updated successfully"
+            message: "Question is updated successfully",
+            question: question
         });
     }).catch(
         err=>{
@@ -104,7 +119,7 @@ const deleteQuestion = async(req, res)=>{
     }
     const userIdFromToken = req.user.userId;
     const userSubject = await UserSubject.findOne({
-        studentId: userIdFromToken,
+        userId: userIdFromToken,
         subjectId: existQuestion.subjectId
     });
     if(!userSubject){
@@ -142,6 +157,16 @@ const findBySubjectId = async(req, res)=>{
     if(!existSubject){
         return res.status(404).json({
             message: "Subject is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    const userSubject = await UserSubject.findOne({
+        userId: userIdFromToken,
+        subjectId: existSubject._id
+    });
+    if(!userSubject){
+        return res.status(403).json({
+            message: "Unauthorized action"
         });
     }
     const questions = await Question.find({

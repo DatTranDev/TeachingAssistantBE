@@ -5,6 +5,7 @@ const attendRecordController = require('../controller/attendRecord_controller.js
 const auth = require('../pkg/auth/authentication.js');
 
 route.post('/add', auth.authenticateToken, cAttendController.addCAttend);
-route.get('/findBySubject/:subjectId', cAttendController.findBySubjectId);
+route.get('/findBySubject/:subjectId',auth.authenticateToken, cAttendController.findBySubjectId);
+route.patch('/update/:id', auth.authenticateToken, cAttendController.updateCAttend);
 route.post('/attendRecord/add', auth.authenticateToken, attendRecordController.addAttendRecord);
 module.exports = route;

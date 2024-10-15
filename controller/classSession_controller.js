@@ -27,6 +27,16 @@ const addClassSession = async(req, res)=>{
             message: "Subject is not found"
         });
     }
+    const userSubject = await UserSubject.findOne({
+        userId: userIdFromToken,
+        subjectId: existSubject._id,
+        role: "teacher"
+    })
+    if(!userSubject){
+        return res.status(404).json({
+            message: "User is not a teacher of the subject"
+        });
+    }
     const newClassSession = new ClassSession(req.body);
     await newClassSession.save().then((classSession)=>{
         return res.status(201).json({
@@ -81,21 +91,22 @@ const findByUserId = async(req, res)=>{
         const host = await User.findById(subject.hostId).select('-password');
         subject = {
             ...subject.toObject(),
+            id: subject._id,
             host: host
         }
         return {
             ...classSession.toObject(),
+            id: classSession._id,
             subject: subject
         }
     }));
-    return res.status(201).json({
+    return res.status(200).json({
         classSessions: results
     });
 }
 const updateClassSession = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.params.id);
     if(!isValidId){
-        await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(400).json({
             message: "Invalid class session id"
         });
@@ -124,7 +135,13 @@ const updateClassSession = async(req, res)=>{
             message: "Unauthorized action"
         });
     }
-    await ClassSession.findByIdAndUpdate(req.params.id, req.body).then((classSession)=>{
+    const updateInfo = {
+        room: req.body.room,
+        dayOfWeek: req.body.dayOfWeek,
+        start: req.body.start,
+        end: req.body.end
+    }
+    await ClassSession.findByIdAndUpdate(req.params.id, updateInfo).then((classSession)=>{
         return res.status(200).json({
             message: "Class session is updated successfully"
         });

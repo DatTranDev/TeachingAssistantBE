@@ -23,20 +23,16 @@ const addCAttend = async(req, res)=>{
     }
     const userIdFromToken = req.user.userId;
     const userSubject = await UserSubject.findOne({
-        studentId: userIdFromToken,
-        subjectId: existClassSession.subjectId
+        userId: userIdFromToken,
+        subjectId: existClassSession.subjectId,
+        role: "teacher"
     });
     if(!userSubject){
         return res.status(404).json({
-            message: "User is not in the subject"
+            message: "User is not a teacher of the subject"
         });
     }
-    if(userSubject.role != 'teacher'){
-        await tokenController.deleteTokenByUserID(userIdFromToken);
-        return res.status(403).json({
-            message: "Unauthorized action"
-        });
-    }
+    req.body.date = helper.parseDate(req.body.date);    
     const newCAttend = new CAttend(req.body);
     await newCAttend.save().then((cAttend)=>{
         return res.status(201).json({
@@ -64,6 +60,16 @@ const findBySubjectId = async(req, res)=>{
             message: "Subject is not found"
         });
     }
+    const userIdFromToken = req.user.userId;
+    const userSubject = await UserSubject.findOne({
+        userId: userIdFromToken,
+        subjectId: req.params.subjectId
+    });
+    if(!userSubject){
+        return res.status(404).json({
+            message: "User is not a teacher or student of the subject"
+        });
+    }
     const classSessions = await ClassSession.find({
         subjectId: req.params.subjectId
     });
@@ -80,7 +86,51 @@ const findBySubjectId = async(req, res)=>{
     });
 
 }
+const updateCAttend = async(req, res)=>{
+    const isValidId = await helper.isValidObjectID(req.params.id);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid cAttend id"
+        });
+    }
+    const existCAttend = await CAttend.findOne({
+        _id: req.params.id
+    });
+    if(!existCAttend){
+        return res.status(404).json({
+            message: "CAttend is not found"
+        });
+    }
+    const cs = await ClassSession.findOne({
+        _id: existCAttend.classSessionId
+    });
+    
+    const userIdFromToken = req.user.userId;
+    const userSubject = await UserSubject.findOne({
+        userId: userIdFromToken,
+        subjectId: cs.subjectId,
+        role: "teacher"
+    });
+    if(!userSubject){
+        return res.status(404).json({
+            message: "User is not a teacher of the subject"
+        });
+    }
+    await CAttend.updateOne({
+        _id: req.params.id
+    }, req.body).then(()=>{
+        return res.status(200).json({
+            message: "CAttend is updated"
+        });
+    }).catch(
+        err=>{
+            return res.status(500).json({
+                message: "Internal server error: "+err
+            });
+        });
+}
 module.exports = {
     addCAttend,
-    findBySubjectId
+    findBySubjectId,
+    updateCAttend
 }

@@ -4,18 +4,14 @@ const UserSubject = require('../model/userSubject.js');
 const tokenController = require('./token_controller.js');
 const helper = require('../pkg/helper/helper.js');
 
-const parseDate = (dateString) => {
-    const parts = dateString.split('/');
-    if (parts.length !== 3) {
-        return NaN;
-    }
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // Months are zero-based in JavaScript
-    const year = parseInt(parts[2], 10);
-    return new Date(year, month, day);
-};
-
 const addSubject = async(req, res)=>{
+    const userIdFromToken = req.user.userId;    
+    if (userIdFromToken != req.body.hostId) {
+        await tokenController.deleteTokenByUserID(userIdFromToken);
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
     const existUser = await User.findOne({
         _id: req.body.hostId
     });
@@ -24,16 +20,9 @@ const addSubject = async(req, res)=>{
             message: "User is not found"
         });
     }
-    const userIdFromToken = req.user.userId;    
-    if (userIdFromToken != req.body.hostId) {
-        await tokenController.deleteTokenByUserID(userIdFromToken);
-        return res.status(403).json({
-            message: "Unauthorized action"
-        });
-    }
     
-    const startDay = parseDate(req.body.startDay);
-    const endDay = parseDate(req.body.endDay);
+    const startDay = helper.parseDate(req.body.startDay);
+    const endDay = helper.parseDate(req.body.endDay);
 
     
     if(isNaN(startDay.getTime()) || isNaN(endDay.getTime())){
@@ -112,7 +101,12 @@ const joinSubject = async(req, res)=>{
             message: "Unauthorized action"
         });
     }
-    const userSubject = new UserSubject(req.body);
+    const us = {
+        userId: req.body.studentId,
+        subjectId: existSubject._id,
+        role: "student"
+    }
+    const userSubject = new UserSubject(us);
     await userSubject.save().then(
         userSubject=>{
             return res.status(201).json({
@@ -135,6 +129,11 @@ const updateSubject = async(req, res)=>{
     const existSubject = await Subject.findOne({
         _id: req.params.id
     });
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
     const userIdFromToken = req.user.userId;
     if(userIdFromToken !== existSubject.hostId.toString()){  
         await tokenController.deleteTokenByUserID(userIdFromToken);
@@ -158,7 +157,7 @@ const updateSubject = async(req, res)=>{
         });
     }
     if(req.body.startDay){
-        req.body.startDay = parseDate(req.body.startDay);
+        req.body.startDay = helper.parseDate(req.body.startDay);
         if (isNaN(req.body.startDay.getTime())) {
             return res.status(400).json({
                 message: "Invalid date format, following dd/mm/yyyy"
@@ -166,7 +165,7 @@ const updateSubject = async(req, res)=>{
         }
     }
     if(req.body.endDay){
-        req.body.endDay = parseDate(req.body.endDay);
+        req.body.endDay = helper.parseDate(req.body.endDay);
         if (isNaN(req.body.endDay.getTime())) {
             return res.status(400).json({
                 message: "Invalid date format, following dd/mm/yyyy"
@@ -199,6 +198,11 @@ const deleteSubject = async(req, res)=>{
     const existSubject = await Subject.findOne({
         _id: req.params.id
     });
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
     const userIdFromToken = req.user.userId;
     if(userIdFromToken !== existSubject.hostId.toString()){  
         await tokenController.deleteTokenByUserID(userIdFromToken);
@@ -206,12 +210,19 @@ const deleteSubject = async(req, res)=>{
             message: "Unauthorized action"
         });
     }
-    if(!existSubject){
-        return res.status(404).json({
-            message: "Subject is not found"
-        });
-    }
-    
+    await Subject.findByIdAndDelete(req.params.id).then(
+        subject=>{
+            // Delete all object references to this subject
+
+            return res.status(200).json({
+                message: "Subject is deleted successfully"
+            });
+        }).catch(
+            err=>{
+                return res.status(500).json({
+                    message: "Internal server error: "+err
+                });
+            });
     
 }
 const findByUserId = async(req, res)=>{

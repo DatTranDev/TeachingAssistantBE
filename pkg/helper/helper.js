@@ -60,4 +60,22 @@ const isPresent = (dis)=>{
     }
     return false
 }
-module.exports = {isValidEmail, isValidPhoneNumber, isValidObjectID, randomCode, getDistanceInKm, isPresent}
+const parseDate = (dateString) => {
+    const parts = dateString.split('/');
+    if (parts.length !== 3) {
+        return NaN;
+    }
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Months are zero-based in JavaScript
+    const year = parseInt(parts[2], 10);
+    return new Date(year, month, day);
+};
+module.exports = {
+    isValidEmail, 
+    isValidPhoneNumber, 
+    isValidObjectID, 
+    randomCode, 
+    getDistanceInKm, 
+    isPresent,
+    parseDate
+}
