@@ -3,6 +3,9 @@ const User = require('../model/user.js');
 const Subject = require('../model/subject.js');
 const UserSubject = require('../model/userSubject.js');
 const tokenController = require('./token_controller.js');
+const Review = require('../model/review.js');
+const AttendRecord = require('../model/attendRecord.js');
+const CAttend = require('../model/cAttend.js');
 const helper = require('../pkg/helper/helper.js');
 
 const addClassSession = async(req, res)=>{
@@ -177,6 +180,28 @@ const deleteClassSession = async(req, res)=>{
             message: "Unauthorized action"
         });
     }
+    // Delete all objects that have reference to this class session
+    const cAttends = await CAttend.find({
+        classSessionId: req.params.id
+    });
+    try{
+        await Promise.all(cAttends.map(async(cAttend)=>{
+            await AttendRecord.deleteMany({
+                cAttendId: cAttend._id
+            });
+            await Review.deleteMany({
+                cAttendId: cAttend._id
+            });
+        }));
+        await CAttend.deleteMany({
+            classSessionId: req.params.id
+        });
+    }
+    catch(err){
+        return res.status(500).json({
+            message: "Internal server error: "+err
+        });
+    }
     await ClassSession.findByIdAndDelete(req.params.id).then(()=>{
         return res.status(200).json({
             message: "Class session is deleted successfully"
@@ -188,4 +213,9 @@ const deleteClassSession = async(req, res)=>{
             });
         });
 }
-module.exports = {addClassSession, findByUserId, updateClassSession, deleteClassSession};
+module.exports = {
+    addClassSession, 
+    findByUserId, 
+    updateClassSession,
+    deleteClassSession
+};

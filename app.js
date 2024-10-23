@@ -13,6 +13,7 @@ const channelRoute = require('./route/channel_route.js');
 const cAttendRoute = require('./route/cAttend_route.js');
 const reviewRoute = require('./route/review_route.js');
 const serviceRoute = require('./route/service_route.js');
+const uploadRoute = require('./route/upload_route.js');
 const http = require('http').createServer(app);
 
 require('dotenv').config();
@@ -54,6 +55,7 @@ app.use(`${api}/channel`, channelRoute);
 app.use(`${api}/cAttend`, cAttendRoute);
 app.use(`${api}/review`, reviewRoute);
 app.use(`${api}/service`, serviceRoute);
+app.use(`${api}/upload`, uploadRoute);
 //  Socket
 const { Server } = require('socket.io');
 const io = new Server(http, {

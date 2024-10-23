@@ -4,7 +4,8 @@ const User = require('../model/user.js');
 const Subject = require('../model/subject.js');
 const UserSubject = require('../model/userSubject.js');
 const ClassSession = require('../model/classSession.js');
-const tokenController = require('./token_controller.js');
+const Review = require('../model/review.js');
+const AttendRecord = require('../model/attendRecord.js');
 
 const addCAttend = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.body.classSessionId);
@@ -129,8 +130,67 @@ const updateCAttend = async(req, res)=>{
             });
         });
 }
+const deleteCAttend = async(req, res)=>{
+    const cAttendId = req.params.cAttendId;
+    const isValidId = await helper.isValidObjectID(cAttendId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid object id"
+        })
+    }
+    const cAttend = await CAttend.findOne({
+        _id: cAttendId
+    });
+    if(!cAttend){
+        return res.status(404).json({
+            message: "CAttend is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    const userSubject = await UserSubject
+    .findOne({
+        userId: userIdFromToken,
+        subjectId: cAttend.subjectId,
+        role: "teacher"
+    });
+    if(!userSubject){
+        return res.status(404).json({
+            message: "User is not a teacher of the subject"
+        });
+    }
+    //Delete all object references to this cAttend
+    await AttendRecord.deleteMany({
+        cAttendId: cAttendId
+    }).catch(
+        err=>{
+            return res.status(500).json({
+                message: "Internal server error: "+err
+            });
+        });
+    await Review.deleteMany({
+        cAttendId: cAttendId
+    }).catch(
+        err=>{
+            return res.status(500).json({
+                message: "Internal server error: "+err
+            });
+        });    
+    await CAttend.deleteOne({
+        _id: cAttendId
+    }).then(()=>{
+        return res.status(200).json({
+            message: "CAttend is deleted"
+        });
+    }).catch(
+        err=>{
+            return res.status(500).json({
+                message: "Internal server error: "+err
+            });
+        });
+}
 module.exports = {
     addCAttend,
     findBySubjectId,
-    updateCAttend
+    updateCAttend,
+    deleteCAttend
 }

@@ -1,9 +1,11 @@
 const express = require('express');
 const route= express.Router();
 const channelController = require('../controller/channel_controller.js');
+const auth = require('../pkg/auth/authentication.js');
 const postController = require('../controller/post_controller.js');
 
 route.post('/add', channelController.addChannel);
+route.post('/addMany', channelController.addManyChannels);
 route.get('/findBySubject/:subjectId', channelController.findBySubjectId);
 route.patch('/update/:id', channelController.updateChannel);
 route.delete('/delete/:id', channelController.deleteChannel);

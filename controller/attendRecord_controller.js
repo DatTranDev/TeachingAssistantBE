@@ -18,6 +18,7 @@ const addAttendRecord = async (req, res) => {
             message: "CAttend is not found"
         });
     }
+
     const existStudent = await User.findById(req.body.studentId);
     if (!existStudent) {
         return res.status(404).json({
@@ -40,7 +41,9 @@ const addAttendRecord = async (req, res) => {
     }else{
         req.body.status = "KP";
     }
-
+    if(!existCAttend.isActive){
+        req.body.status = "KP";
+    }
     const newAttendRecord = new AttendRecord(req.body);
     await newAttendRecord.save().then((attendRecord) => {
         return res.status(201).json({
@@ -54,4 +57,4 @@ const addAttendRecord = async (req, res) => {
         });
 }
 
-module.exports = { addAttendRecord };
+module.exports = { addAttendRecord};

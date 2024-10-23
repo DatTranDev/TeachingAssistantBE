@@ -1,6 +1,13 @@
 const Subject = require('../model/subject.js');
 const User = require('../model/user.js');
 const UserSubject = require('../model/userSubject.js');
+const Question = require('../model/question.js');
+const Channel = require('../model/channel.js');
+const Post = require('../model/post.js');
+const CAttend = require('../model/cAttend.js');
+const ClassSession = require('../model/classSession.js');
+const AttendRecord = require('../model/attendRecord.js');
+const Review = require('../model/review.js');
 const tokenController = require('./token_controller.js');
 const helper = require('../pkg/helper/helper.js');
 
@@ -210,10 +217,74 @@ const deleteSubject = async(req, res)=>{
             message: "Unauthorized action"
         });
     }
-    await Subject.findByIdAndDelete(req.params.id).then(
-        subject=>{
-            // Delete all object references to this subject
+    // Delete all object references to this subject
+    // Delete all questions
+    await Question.deleteMany({
+        subjectId: req.params.id
+    }).catch(err=>{
+        return res.status(500).json({
+            message: "Internal server error while delete questions "+err
+        });
+    });
+    // Delete all channels
+    const channels = await Channel.find({
+        subjectId: req.params.id
+    });
+    try{
+        await Promise.all(channels.map(async channel=>{
+            await Post.deleteMany({
+                channelId: channel._id
+            });
+        }));
+        await Channel.deleteMany({
+            subjectId: req.params.id
+        });
+    } catch{
+        return res.status(500).json({
+            message: "Internal server error while delete channels "+err
+        });
+    }
+    // Delete all class sessions
+    const classSessions = await ClassSession.find({
+        subjectId: req.params.id
+    });
+    try{
+        await Promise.all(classSessions.map(async classSession=>{
+            const cAttends = await CAttend.find({
+                classSessionId: classSession._id
+            });
+            await Promise.all(cAttends.map(async cAttend=>{
+                await AttendRecord.deleteMany({
+                    cAttendId: cAttend._id
+                });
+                await Review.deleteMany({
+                    cAttendId: cAttend._id
+                });
+            }));
+            await CAttend.deleteMany({
+                classSessionId: classSession._id
+            });
+            
+        }));
+        await ClassSession.deleteMany({
+            subjectId: req.params.id
+        });
+    } catch(err){
+        return res.status(500).json({
+            message: "Internal server error while delete class sessions "+err
+        });
+    }
+    //Delete all user subjects
+    await UserSubject.deleteMany({
+        subjectId: req.params.id
+    }).catch(
+        err=>{
+            return res.status(500).json({
+                message: "Internal server error while delete user subjects "+err
+            });
+        });
 
+    await Subject.findByIdAndDelete(req.params.id).then(()=>{
             return res.status(200).json({
                 message: "Subject is deleted successfully"
             });
@@ -259,4 +330,10 @@ const findByUserId = async(req, res)=>{
     });
 }
 
-module.exports = {addSubject, joinSubject, updateSubject, deleteSubject, findByUserId};
+module.exports = {
+    addSubject, 
+    joinSubject, 
+    updateSubject, 
+    deleteSubject, 
+    findByUserId
+};

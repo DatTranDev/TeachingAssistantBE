@@ -1,42 +1,41 @@
-const { find } = require('../model/attendRecord.js');
 const Review = require('../model/review.js');
 const User = require('../model/user.js');
 const helper = require('../pkg/helper/helper.js');
-const UserSubject = require('../model/userSubject.js');
 const tokenController = require('./token_controller.js');
 
 const addReview = async (req, res) => {
-    const isValidId = await helper.isValidObjectID(req.body.userId);
+    const isValidId = await helper.isValidObjectID(req.body.studentId);
     if (!isValidId) {
         return res.status(400).json({
             message: "Invalid user id"
         });
     }
-    const existUser = await User.findById(req.body.userId);
+    const existUser = await User.findById(req.body.studentId);
     if (!existUser) {
         return res.status(404).json({
             message: "User is not found"
         });
     }
     const userIdFromToken = req.user.userId;
-    if (userIdFromToken != req.body.userId) {
+    if (userIdFromToken != req.body.studentId) {
         await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });
     }
-    if (req.body.rating < 1 || req.body.rating > 5) {
+    if (req.body.teachingMethodScore < 1 || req.body.teachingMethodScore > 5) {
         return res.status(400).json({
             message: "Rating must be between 1 and 5"
         });
     }
-    const userSubject = await UserSubject.findOne({
-        studentId: req.body.userId,
-        subjectId: req.body.subjectId
-    });
-    if (!userSubject) {
-        return res.status(404).json({
-            message: "User is not in the subject"
+    if (req.body.atmosphereScore < 1 || req.body.atmosphereScore > 5) {
+        return res.status(400).json({
+            message: "Rating must be between 1 and 5"
+        });
+    }
+    if (req.body.documentScore < 1 || req.body.documentScore > 5) {
+        return res.status(400).json({
+            message: "Rating must be between 1 and 5"
         });
     }
     const newReview = new Review(req.body);

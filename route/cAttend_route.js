@@ -7,5 +7,6 @@ const auth = require('../pkg/auth/authentication.js');
 route.post('/add', auth.authenticateToken, cAttendController.addCAttend);
 route.get('/findBySubject/:subjectId',auth.authenticateToken, cAttendController.findBySubjectId);
 route.patch('/update/:id', auth.authenticateToken, cAttendController.updateCAttend);
+route.delete('/delete/:cAttendId', auth.authenticateToken, cAttendController.deleteCAttend);
 route.post('/attendRecord/add', auth.authenticateToken, attendRecordController.addAttendRecord);
 module.exports = route;
