@@ -8,4 +8,5 @@ route.post('/join',auth.authenticateToken, subjectController.joinSubject);
 route.patch('/update/:id',auth.authenticateToken, subjectController.updateSubject);
 route.delete('/delete/:id',auth.authenticateToken, subjectController.deleteSubject);
 route.get('/findByUserId/:userId',auth.authenticateToken, subjectController.findByUserId);
+route.get('avgReview/:subjectId',subjectController.getAvgRating);
 module.exports = route;

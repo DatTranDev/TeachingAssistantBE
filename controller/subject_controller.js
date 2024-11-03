@@ -329,11 +329,59 @@ const findByUserId = async(req, res)=>{
         subjects: subjects
     });
 }
+const getAvgRating = async(req, res)=>{
+    const isValidId = await helper.isValidObjectID(req.params.subjectId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const existSubject = await Subject.findById(req.params.subjectId);
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const classSessions = await ClassSession.find({
+        subjectId: req.params.subjectId
+    });
+    const cAttends = await CAttend.find({
+        classSessionId: {
+            $in: classSessions.map(classSession=>classSession._id)
+        }
+    });
+    const reviews = await Review.find({
+        cAttendId: {
+            $in: cAttends.map(cAttend=>cAttend._id)
+        }
+    });
+    const totalReviews = reviews.length;
+    const totalUnderstand = reviews.reduce((acc, review)=>acc+review.understandPercent, 0);
+    const totalUseful = reviews.reduce((acc, review)=>acc+review.usefulPercent, 0);
+    const totalTeachingMethod = reviews.reduce((acc, review)=>acc+parseInt(review.teachingMethodScore), 0);
+    const totalAtmosphere = reviews.reduce((acc, review)=>acc+parseInt(review.atmosphereScore), 0);
+    const totalDocument = reviews.reduce((acc, review)=>acc+parseInt(review.documentScore), 0);
+    const avgUnderstand = totalReviews == 0 ? 0 : totalUnderstand/totalReviews;
+    const avgUseful = totalReviews == 0 ? 0 : totalUseful/totalReviews;
+    const avgTeachingMethod = totalReviews == 0 ? 0 : totalTeachingMethod/totalReviews;
+    const avgAtmosphere = totalReviews == 0 ? 0 : totalAtmosphere/totalReviews;
+    const avgDocument = totalReviews == 0 ? 0 : totalDocument/totalReviews;
+    return res.status(200).json({
+        avgUnderstand: avgUnderstand,
+        avgUseful: avgUseful,
+        avgTeachingMethod: avgTeachingMethod,
+        avgAtmosphere: avgAtmosphere,
+        avgDocument: avgDocument,
+        thinkings: reviews.map(review=>review.thinking)
+    });
+};
+
 
 module.exports = {
     addSubject, 
     joinSubject, 
     updateSubject, 
     deleteSubject, 
-    findByUserId
+    findByUserId,
+    getAvgRating
 };
