@@ -1,5 +1,6 @@
 const Post = require('../model/post.js');
 const Channel = require('../model/channel.js');
+const User = require('../model/user.js');
 const helper = require('../pkg/helper/helper.js');
 
 const addPost = async(req, res)=>{
@@ -47,8 +48,16 @@ const findByChannelId = async(req, res)=>{
     const posts = await Post.find({
         channelId: req.params.channelId
     });
+    const postsWithCreator = await Promise.all(posts.map(async(post)=>{
+        const creator = await User.findOne({
+            _id: post.creator
+        }).select("-password");
+        post = post.toJSON();
+        post.user = creator;
+        return post;
+    }));
     return res.status(200).json({
-        posts: posts
+        posts: postsWithCreator
     });
 }
 const updatePost = async(req, res)=>{
