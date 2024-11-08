@@ -58,9 +58,37 @@ const findReviewByCAttendId = async (req, res) => {
             message: "Invalid id"
         });
     }
-    const reviews = await Review.find({ cAttendId: req.params.cAttendId });
-    return res.status(200).json({
-        reviews: reviews
-    });
+    //Pagination
+    const limit = parseInt(req.query.limit);
+    const page = parseInt(req.query.page);
+    if(!limit || !page){
+        const reviews = await Review.find({ cAttendId: req.params.cAttendId });
+        return res.status(200).json({
+            reviews: reviews
+        });
+    }
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const results = {};
+    if(endIndex < await Review.countDocuments({cAttendId: req.params.cAttendId}).exec()){
+        results.next = {
+            page: page + 1,
+            limit: limit
+        };
+    }
+    if(startIndex > 0){
+        results.previous = {
+            page: page - 1,
+            limit: limit
+        };
+    }
+    try{
+        results.reviews = await Review.find({ cAttendId: req.params.cAttendId }).limit(limit).skip(startIndex).exec();
+        return res.status(200).json(results);
+    }catch(err){
+        return res.status(500).json({
+            message: "Internal server error: "+err
+        });
+    }
 }
 module.exports = { addReview, findReviewByCAttendId };

@@ -45,9 +45,34 @@ const findByChannelId = async(req, res)=>{
             message: "Channel is not found"
         });
     }
-    const posts = await Post.find({
-        channelId: req.params.channelId
-    });
+    //Pagination
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+    const startIndex = (page-1)*limit;
+    const endIndex = page*limit;
+    const results = {};
+    if(endIndex < await Post.countDocuments({channelId: req.params.channelId}).exec()){
+        results.next = {
+            page: page + 1,
+            limit: limit
+        };
+    }
+    if(startIndex > 0){
+        results.previous = {
+            page: page - 1,
+            limit: limit
+        };
+    }
+    var posts = [];
+    if(!limit || !page){
+        posts = await Post.find({
+            channelId: req.params.channelId
+        });
+    }else{
+        posts = await Post.find({
+            channelId: req.params.channelId
+        }).limit(limit).skip(startIndex).exec();
+    }
     const postsWithCreator = await Promise.all(posts.map(async(post)=>{
         const creator = await User.findOne({
             _id: post.creator
@@ -56,9 +81,8 @@ const findByChannelId = async(req, res)=>{
         post.user = creator;
         return post;
     }));
-    return res.status(200).json({
-        posts: postsWithCreator
-    });
+    results.posts = postsWithCreator;
+    return res.status(200).json(results);
 }
 const updatePost = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.params.id);

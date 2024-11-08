@@ -169,13 +169,43 @@ const findBySubjectId = async(req, res)=>{
             message: "Unauthorized action"
         });
     }
-    const questions = await Question.find({
-        subjectId: req.params.subjectId
-    });
-    return res.status(200).json({
-        questions: questions
-    });
+    //Pagination with limit and page if exist
+    const limit = parseInt(req.query.limit);
+    const page = parseInt(req.query.page);
+    if(!limit || !page){
+        const questions = await Question.find({
+            subjectId: req.params.subjectId
+        });
+        return res.status(200).json({
+            questions: questions
+        });
+    }
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const results = {};
+    if(endIndex < await Question.countDocuments({subjectId: req.params.subjectId}).exec()){
+        results.next = {
+            page: page + 1,
+            limit: limit
+        };
+    }
+    if(startIndex > 0){
+        results.previous = {
+            page: page - 1,
+            limit: limit
+        };
+    }
+    try{
+        results.questions = await Question.find({subjectId: req.params.subjectId}).limit(limit).skip(startIndex).exec();
+        return res.status(200).json(results);
+    } catch(err){
+        return res.status(500).json({
+            message: "Internal server error: "+err
+        });
+    }
 }
+
+
 module.exports = { 
     addQuestion, 
     updateQuestion, 
