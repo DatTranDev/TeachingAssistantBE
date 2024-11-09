@@ -63,9 +63,26 @@ const io = new Server(http, {
         origin: '*',
     }
 });
+let onlineUsers = [];
 io.on('connection', (socket) => {
     console.log(`${socket.id} connected`);
-    
+
+    socket.on("addOnlineUser", (userID)=>{
+        const check = onlineUsers?.some((user) => user.userID == userID) 
+        if(check){
+         const index = onlineUsers.findIndex((user) => user.userID == userID)
+         onlineUsers[index].socketID = socket.id
+        }else{
+         onlineUsers.push({
+             userID: userID,
+             socketID: socket.id
+         })
+        }
+         
+         console.log(onlineUsers)
+         io.emit("getOnlineUsers", onlineUsers)
+     })
+
     socket.on("joinSubject", ({ userID, subjectID }) => {
         socket.join(subjectID);  
         console.log(`${userID} joined subject room: ${subjectID}`);
@@ -103,4 +120,9 @@ io.on('connection', (socket) => {
         console.log(`${userID} left room: ${subjectID}`);
     });
 
+    socket.on("disconnect", ()=>{
+        onlineUsers = onlineUsers.filter((user)=> user.socketID !== socket.id)
+        console.log(onlineUsers, " disconnect")
+        io.emit("getOnlineUsers", onlineUsers)
+    })
 });
