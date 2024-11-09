@@ -122,7 +122,7 @@ io.on('connection', (socket) => {
 
     socket.on("disconnect", ()=>{
         onlineUsers = onlineUsers.filter((user)=> user.socketID !== socket.id)
-        console.log(onlineUsers, " disconnect")
+        console.log(socket.id, " disconnect")
         io.emit("getOnlineUsers", onlineUsers)
     })
 });
