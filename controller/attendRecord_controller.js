@@ -32,6 +32,15 @@ const addAttendRecord = async (req, res) => {
             message: "Unauthorized action"
         });
     }
+    const attendRecord = await AttendRecord.findOne({
+        cAttendId: req.body.cAttendId,
+        studentId: req.body.studentId
+    });
+    if (attendRecord) {
+        return res.status(400).json({
+            message: "Attend record is already exist, please update it"
+        });
+    }
     const lat1 = existCAttend.teacherLatitude;
     const lon1 = existCAttend.teacherLongitude;
     const lat2 = req.body.studentLatitude;

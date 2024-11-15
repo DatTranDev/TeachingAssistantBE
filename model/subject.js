@@ -23,6 +23,11 @@ const subjectSchema = new Schema({
         type: Date,
         required: true,
     },
+    currentSession:{
+        type: Number,
+        required: true,
+        default: 0
+    },
     joinCode: {
         type: String,
         required: true,

@@ -33,16 +33,24 @@ const addCAttend = async(req, res)=>{
             message: "User is not a teacher of the subject"
         });
     }
-    req.body.date = helper.parseDate(req.body.date);    
+    req.body.date = helper.parseDate(req.body.date);
+
     const newCAttend = new CAttend(req.body);
-    await newCAttend.save().then((cAttend)=>{
-        return res.status(201).json({
-            cAttend: cAttend
-        });
-    }).catch(
-        err=>{
+    await newCAttend.save()
+        .then(async (cAttend) => {
+            const subject = await Subject.findById(existClassSession.subjectId);
+            if (subject) {
+                subject.currentSession += 1;
+                await subject.save();
+            }
+
+            return res.status(201).json({
+                cAttend: cAttend
+            });
+        })
+        .catch(err => {
             return res.status(500).json({
-                message: "Internal server error: "+err
+                message: "Internal server error: " + err
             });
         });
 }
@@ -175,18 +183,24 @@ const deleteCAttend = async(req, res)=>{
                 message: "Internal server error: "+err
             });
         });    
-    await CAttend.deleteOne({
-        _id: cAttendId
-    }).then(()=>{
+    await CAttend.deleteOne({ _id: req.params.cAttendId })
+    .then(async () => {
+        // Decrease the currentSession of the subject
+        const subject = await Subject.findById(userSubject.subjectId);
+        if (subject) {
+            subject.currentSession -= 1;
+            await subject.save();
+        }
+
         return res.status(200).json({
-            message: "CAttend is deleted"
+            message: "CAttend deleted successfully"
         });
-    }).catch(
-        err=>{
-            return res.status(500).json({
-                message: "Internal server error: "+err
-            });
+    })
+    .catch(err => {
+        return res.status(500).json({
+            message: "Internal server error: " + err
         });
+    });
 }
 module.exports = {
     addCAttend,

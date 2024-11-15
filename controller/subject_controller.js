@@ -163,6 +163,11 @@ const updateSubject = async(req, res)=>{
             message: "Host id is not allowed to update"
         });
     }
+    if(req.body.currentSession){
+        return res.status(400).json({
+            message: "Current session is not allowed to update"
+        });
+    }
     if(req.body.startDay){
         req.body.startDay = helper.parseDate(req.body.startDay);
         if (isNaN(req.body.startDay.getTime())) {
