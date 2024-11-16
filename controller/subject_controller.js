@@ -98,7 +98,7 @@ const joinSubject = async(req, res)=>{
     const existStudent = await User.findById(req.body.studentId);
     if(!existStudent){
         return res.status(404).json({
-            message: "Student is not found"
+            message: "User is not found"
         });
     }
     const userIdFromToken = req.user.userId;
@@ -111,7 +111,13 @@ const joinSubject = async(req, res)=>{
     const us = {
         userId: req.body.studentId,
         subjectId: existSubject._id,
-        role: "student"
+        role: existStudent.role
+    }
+    const existUserSubject = await UserSubject.findOne({userId: us.userId, subjectId: us.subjectId});
+    if(existUserSubject){
+        return res.status(400).json({
+            message: "You have already joined this subject"
+        });
     }
     const userSubject = new UserSubject(us);
     await userSubject.save().then(
