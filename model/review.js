@@ -40,6 +40,7 @@ const reviewSchema = new Schema({
     timestamps: true
 });
 
+reviewSchema.index({ cAttendId: 1, studentId: 1 }, { unique: true });
 reviewSchema.virtual("id").get(function(){
     return this._id.toHexString
 });

@@ -19,6 +19,7 @@ const userSubjectSchema = new Schema({
     }
 });
 
+userSubjectSchema.index({ userId: 1, subjectId: 1 }, { unique: true });
 userSubjectSchema.set('toJSON',{
     "virtuals": true
 });

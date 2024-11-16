@@ -28,6 +28,15 @@ const addChannel = async(req, res)=>{
             message: "Channel is already existed"
         });
     }
+    const isExistChannelName = await Channel.findOne({
+        subjectId: req.body.subjectId,
+        name: req.body.name
+    });
+    if(isExistChannelName){
+        return res.status(400).json({
+            message: "Channel name is already existed"
+        });
+    }
     await newChannel.save().then((channel)=>{
         return res.status(201).json({
             channel: channel

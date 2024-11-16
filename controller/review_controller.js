@@ -38,6 +38,12 @@ const addReview = async (req, res) => {
             message: "Rating must be between 1 and 5"
         });
     }
+    const existReview = await Review.findOne({ cAttendId: req.body.cAttendId, studentId: req.body.studentId });
+    if (existReview) {
+        return res.status(409).json({
+            message: "Review already exists"
+        });
+    }
     const newReview = new Review(req.body);
     await newReview.save().then((review) => {
         return res.status(201).json({

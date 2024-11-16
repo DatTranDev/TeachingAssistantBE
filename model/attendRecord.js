@@ -28,6 +28,7 @@ const attendRecordSchema = new Schema({
 }, {
     timestamps: true
 });
+attendRecordSchema.index({ cAttendId: 1, studentId: 1 }, { unique: true });
 attendRecordSchema.virtual("id").get(function(){
     return this._id.toHexString
 });
