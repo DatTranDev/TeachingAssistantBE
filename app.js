@@ -14,6 +14,9 @@ const cAttendRoute = require('./route/cAttend_route.js');
 const reviewRoute = require('./route/review_route.js');
 const serviceRoute = require('./route/service_route.js');
 const uploadRoute = require('./route/upload_route.js');
+const firebaseRoute = require('./route/firebase_route.js');
+
+const firebase_controller = require('./controller/firebase_controller.js');
 const http = require('http').createServer(app);
 
 require('dotenv').config();
@@ -56,6 +59,7 @@ app.use(`${api}/cAttend`, cAttendRoute);
 app.use(`${api}/review`, reviewRoute);
 app.use(`${api}/service`, serviceRoute);
 app.use(`${api}/upload`, uploadRoute);
+app.use(`${api}/firebase`, firebaseRoute);
 //  Socket
 const { Server } = require('socket.io');
 const io = new Server(http, {
@@ -96,16 +100,40 @@ io.on('connection', (socket) => {
         console.log(`${userID} joined channel room: ${roomName}`);       
     });
 
-    socket.on("sendMessageToSubject", ({ subjectID, message, senderID }) => {
-
+    socket.on("sendMessageToSubject", async ({ subjectID, message, senderID }) => {
+        // message = {
+        //     sender: "Name",
+        //     title: "Classname",
+        //     body: "Message",
+        //     FCMtoken: "FCMtoken"
+        // }
         io.to(subjectID).emit("receiveSubjectMessage", message);
+        try{
+            await firebase_controller.unsubscribe(message.FCMtoken, subjectID);
+            await firebase_controller.sendNotification(message, subjectID);
+            setTimeout( async() => {
+                await firebase_controller.subscribe(message.FCMtoken, subjectID);
+            }, 2000);
+        }
+        catch(err){
+            console.log(err);
+        }
         console.log(`Message from ${senderID} sent to subject room: ${subjectID}`);
     });
 
-    socket.on("sendMessageToChannel", ({ subjectID, channelID, message, senderID }) => {
+    socket.on("sendMessageToChannel", async ({ subjectID, channelID, message, senderID }) => {
         const roomName = `${subjectID}_${channelID}`;  
-
         io.to(roomName).emit("receiveChannelMessage", message);
+        try{
+            await firebase_controller.unsubscribe(message.FCMtoken, subjectID);
+            await firebase_controller.sendNotification(message, subjectID);
+            setTimeout( async() => {
+                await firebase_controller.subscribe(message.FCMtoken, subjectID);
+            }, 2000);
+        }
+        catch(err){
+            console.log(err);
+        }
         console.log(`Message from ${senderID} sent to channel room: ${roomName}`);
     });
 
