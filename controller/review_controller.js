@@ -1,6 +1,7 @@
 const Review = require('../model/review.js');
 const User = require('../model/user.js');
 const cAttend = require('../model/cAttend.js');
+const Subject = require('../model/subject.js');
 const helper = require('../pkg/helper/helper.js');
 const tokenController = require('./token_controller.js');
 
@@ -110,4 +111,39 @@ const findReviewByCAttendId = async (req, res) => {
         });
     }
 }
-module.exports = { addReview, findReviewByCAttendId };
+const findBySubjectAndUser = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.params.userId);
+    if (!isValidId) {
+        return res.status(400).json({
+            message: "Invalid id"
+        });
+    }
+    const existUser = await User.findById(req.params.userId);
+    if (!existUser) {
+        return res.status(404).json({
+            message: "User is not found"
+        });
+    }
+    const isValidId2 = await helper.isValidObjectID(req.params.subjectId);
+    if (!isValidId2) {
+        return res.status(400).json({
+            message: "Invalid id"
+        });
+    }
+    const existSubject = await Subject.findById(req.params.subjectId);
+    if (!existSubject) {
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const reviews = await Review.find({
+        studentId: req.params.userId
+    }).populate({
+        path: 'cAttendId',
+        populate: { path: 'classSessionId' }
+    });
+    return res.status(200).json({
+        reviews: reviews.filter(review => review.cAttendId.classSessionId.subjectId == req.params.subjectId)
+    });
+}
+module.exports = { addReview, findReviewByCAttendId, findBySubjectAndUser };
