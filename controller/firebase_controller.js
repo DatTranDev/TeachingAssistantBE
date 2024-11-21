@@ -87,6 +87,23 @@ const unsubscribeFromTopic = async (req, res) => {
     });
     return res.status(200).send('Unsubscribed from topic')
 }
+const sendToSpecificDevice = async (req, res) => {
+    const {token, notification} = req.body;
+    if(!token || !notification) return res.status(400).send('Missing token or notification')
+    const message = {
+        notification: {
+            title: notification.title,
+            body: notification.body
+        },
+        token: token
+    }
+    await messaging.send(message).catch(err=>{
+        return res.status(500).json({
+          message: 'Failed to send notification '+err  
+        })
+    });
+    return res.status(200).send('Notification sent')
+}
 const sendNotification = async(message, topic)=>{
     const msg = {
         notification: {
@@ -117,4 +134,4 @@ const unsubscribe = async(token, topic)=>{
     return true;
   }
 
-module.exports = {uploadImage, subscribeToTopic, unsubscribeFromTopic, sendNotification, subscribe, unsubscribe};
+module.exports = {uploadImage, subscribeToTopic, unsubscribeFromTopic, sendNotification, subscribe, unsubscribe, sendToSpecificDevice};

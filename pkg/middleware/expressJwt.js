@@ -14,6 +14,7 @@ const authJWT = ()=>{
             `${api}/user/login`,
             `${api}/user/changepassword`,
             `${api}/service/sendEmail`,
+            `${api}/firebase/sendToSpecificDevice`,
             new RegExp(`${api}/token/deleteall/.*`)
         ]
     })

@@ -1,5 +1,6 @@
 const Review = require('../model/review.js');
 const User = require('../model/user.js');
+const cAttend = require('../model/cAttend.js');
 const helper = require('../pkg/helper/helper.js');
 const tokenController = require('./token_controller.js');
 
@@ -14,6 +15,18 @@ const addReview = async (req, res) => {
     if (!existUser) {
         return res.status(404).json({
             message: "User is not found"
+        });
+    }
+    const isValidId2 = await helper.isValidObjectID(req.body.cAttendId);
+    if (!isValidId2) {
+        return res.status(400).json({
+            message: "Invalid class attendance id"
+        });
+    }
+    const existCAttend = await cAttend.findById(req.body.cAttendId);
+    if (!existCAttend) {
+        return res.status(404).json({
+            message: "Class attendance is not found"
         });
     }
     const userIdFromToken = req.user.userId;
