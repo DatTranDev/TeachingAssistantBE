@@ -100,41 +100,25 @@ io.on('connection', (socket) => {
         console.log(`${userID} joined channel room: ${roomName}`);       
     });
 
-    socket.on("sendMessageToSubject", async ({ subjectID, message, senderID }) => {
-        // message = {
-        //     sender: "Name",
-        //     title: "Classname",
-        //     body: "Message",
-        //     FCMtoken: "FCMtoken"
-        // }
+    socket.on("sendMessageToSubject", async ({ subjectID, message, dataMsg }) => {
         io.to(subjectID).emit("receiveSubjectMessage", message);
         try{
-            await firebase_controller.unsubscribe(message.FCMtoken, subjectID);
-            await firebase_controller.sendNotification(message, subjectID);
-            setTimeout( async() => {
-                await firebase_controller.subscribe(message.FCMtoken, subjectID);
-            }, 2000);
+            await firebase_controller.sendNotification(dataMsg, subjectID)
+        }catch(err){
+            console.log(err)
         }
-        catch(err){
-            console.log(err);
-        }
-        console.log(`Message from ${senderID} sent to subject room: ${subjectID}`);
+        console.log(`Message from ${dataMsg.sender} sent to subject room: ${subjectID}`);
     });
 
-    socket.on("sendMessageToChannel", async ({ subjectID, channelID, message, senderID }) => {
+    socket.on("sendMessageToChannel", async ({ subjectID, channelID, message, dataMsg }) => {
         const roomName = `${subjectID}_${channelID}`;  
         io.to(roomName).emit("receiveChannelMessage", message);
         try{
-            await firebase_controller.unsubscribe(message.FCMtoken, subjectID);
-            await firebase_controller.sendNotification(message, subjectID);
-            setTimeout( async() => {
-                await firebase_controller.subscribe(message.FCMtoken, subjectID);
-            }, 2000);
+            await firebase_controller.sendNotification(dataMsg, roomName);
+        }catch(err){
+            console.log(err)
         }
-        catch(err){
-            console.log(err);
-        }
-        console.log(`Message from ${senderID} sent to channel room: ${roomName}`);
+        console.log(`Message from ${dataMsg.sender} sent to channel room: ${roomName}`);
     });
 
     socket.on("leaveSubjectChannel", ({ userID, subjectID, channelID }) => {
@@ -147,6 +131,16 @@ io.on('connection', (socket) => {
         socket.leave(subjectID);
         console.log(`${userID} left room: ${subjectID}`);
     });
+
+    socket.on("attendace", async ({subjectID, dataMsg})=>{
+        io.to(subjectID).emit("receiveAttendance", dataMsg)
+        try{
+            await firebase_controller.sendNotification(dataMsg, subjectID)
+        }catch(err){
+            console.log(err)
+        }
+        console.log(`Attendance from ${dataMsg.sender} sent to subject room: ${subjectID}`);
+    })
 
     socket.on("disconnect", ()=>{
         onlineUsers = onlineUsers.filter((user)=> user.socketID !== socket.id)

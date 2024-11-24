@@ -1,6 +1,7 @@
 const {initializeApp, cert} = require("firebase-admin/app")
 const { getMessaging} = require("firebase-admin/messaging")
-const { getStorage, getDownloadURL} = require("firebase-admin/storage")
+const { getStorage, getDownloadURL} = require("firebase-admin/storage");
+const { type } = require("os");
 const path = require("path")
 require("dotenv").config({path: path.join(__dirname, "../.env")});
 const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS)
@@ -68,13 +69,17 @@ const uploadImage = async (req, res) => {
     })
 }
 const subscribeToTopic = async (req, res) => {
-    const {token, topic} = req.body;
-    if(!token || !topic) return res.status(400).send('Missing token or topic')
-    await messaging.subscribeToTopic(token, topic).catch(err=>{
+    const {token, topics} = req.body;
+    if(!token || !topics) 
+        return res.status(400).send('Missing token or topic')
+    try{
+        for(let topic of topics)
+            await messaging.subscribeToTopic(token, topic)
+    }catch(err){
         return res.status(500).json({
           message: 'Failed to subscribe to topic '+err  
         })
-    });
+    }
     return res.status(200).send('Subscribed to topic')
 }
 const unsubscribeFromTopic = async (req, res) => {
@@ -91,29 +96,45 @@ const sendToSpecificDevice = async (req, res) => {
     const {token, notification} = req.body;
     if(!token || !notification) return res.status(400).send('Missing token or notification')
     const message = {
+        data:{
+            "test": "test"
+        },
         notification: {
             title: notification.title,
             body: notification.body
         },
         token: token
     }
-    await messaging.send(message).catch(err=>{
+    try{
+        await messaging.send(message)
+    }catch(err){
         return res.status(500).json({
           message: 'Failed to send notification '+err  
         })
-    });
+    }
     return res.status(200).send('Notification sent')
 }
 const sendNotification = async(message, topic)=>{
     const msg = {
         notification: {
-            title: message.title,
-            body: `${message.sender}: ${message.body}`
+            title:  message.type!='attendance'
+                    ? message.title
+                    : 'Điểm danh ngay!',
+            body:  message.type!='attendance'  
+                    ? `${message.sender}: ${message.body}`
+                    : `Môn học: ${message.subject}\nPhòng: ${message.room}`
+        },
+        data: {
+            sender: message.senderId,
+            type: message.type,
+            subject: message.subject,
+            room: message.room,
         },
         topic: topic
     }
     await messaging.send(msg).catch(err=>{
         return false;
+        console.log("Failed to send notification "+err)
     });
     return true;
 }
