@@ -119,27 +119,32 @@ const sendToSpecificDevice = async (req, res) => {
     return res.status(200).send('Notification sent')
 }
 const sendNotification = async(message, topic)=>{
-    const msg = {
-        notification: {
-            title:  message.type!='attendance'
-                    ? message.title
-                    : 'Điểm danh ngay!',
-            body:  message.type!='attendance'  
-                    ? `${message.sender}: ${message.body}`
-                    : `Môn học: ${message.subject}\nPhòng: ${message.room}`
-        },
-        data: {
-            sender: message.senderId,
-            type: message.type,
-            subject: message.subject,
-            room: message.room,
-        },
-        topic: topic
+    try{
+        const msg = {
+            notification: {
+                title:  message.type!='attendance'
+                        ? message.title
+                        : 'Điểm danh ngay!',
+                body:  message.type!='attendance'  
+                        ? `${message.sender}: ${message.body}`
+                        : `Môn học: ${message.subject}\nPhòng: ${message.room}`
+            },
+            data: {
+                sender: message.senderId,
+                type: message.type,
+                subject: message.subject,
+                room: message.room,
+            },
+            topic: topic
+        }
+        await messaging.send(msg).catch(err=>{
+            return false;
+        });
+        return true;
     }
-    await messaging.send(msg).catch(err=>{
+    catch(err){
         return false;
-    });
-    return true;
+    }
 }
 const subscribe = async(token, topic)=>{
     await messaging.subscribeToTopic(token, topic).catch(
