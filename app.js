@@ -107,7 +107,7 @@ io.on('connection', (socket) => {
         }catch(err){
             console.log(err)
         }
-        console.log(`Message from ${dataMsg.sender} sent to subject room: ${subjectID}`);
+        //console.log(`Message from ${dataMsg.sender} sent to subject room: ${subjectID}`);
     });
 
     socket.on("sendMessageToChannel", async ({ subjectID, channelID, message, dataMsg }) => {
@@ -118,7 +118,7 @@ io.on('connection', (socket) => {
         }catch(err){
             console.log(err)
         }
-        console.log(`Message from ${dataMsg.sender} sent to channel room: ${roomName}`);
+        //console.log(`Message from ${dataMsg.sender} sent to channel room: ${roomName}`);
     });
 
     socket.on("leaveSubjectChannel", ({ userID, subjectID, channelID }) => {
