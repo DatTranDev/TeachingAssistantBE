@@ -82,14 +82,18 @@ const subscribeToTopic = async (req, res) => {
     }
     return res.status(200).send('Subscribed to topic')
 }
-const unsubscribeFromTopic = async (req, res) => {
-    const {token, topic} = req.body;
-    if(!token || !topic) return res.status(400).send('Missing token or topic')
-    await messaging.unsubscribeFromTopic(token, topic).catch(err=>{
+const unsubscribeFromTopics = async (req, res) => {
+    const {token, topics} = req.body;
+    if(!token || !topics) 
+        return res.status(400).send('Missing token or topic')
+    try{
+        for(let topic of topics)
+            await messaging.unsubscribeFromTopic(token, topic)
+    }catch(err){
         return res.status(500).json({
           message: 'Failed to unsubscribe from topic '+err  
         })
-    });
+    }
     return res.status(200).send('Unsubscribed from topic')
 }
 const sendToSpecificDevice = async (req, res) => {
@@ -157,7 +161,7 @@ const unsubscribe = async(token, topic)=>{
 module.exports = {
     uploadImage, 
     subscribeToTopic, 
-    unsubscribeFromTopic, 
+    unsubscribeFromTopics, 
     sendNotification, 
     subscribe, 
     unsubscribe, 

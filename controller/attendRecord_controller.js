@@ -47,6 +47,20 @@ const addAttendRecord = async (req, res) => {
             message: "Attend record is already exist, please update it"
         });
     }
+    if(!req.body.FCMToken){
+        return res.status(400).json({
+            message: "FCMToken is required"
+        });
+    }
+    const existAttendRecord = await AttendRecord.findOne({
+        cAttendId: req.body.cAttendId,
+        FCMToken: req.body.FCMToken
+    });
+    if(existAttendRecord){
+        return res.status(400).json({
+            message: "This device is already used for attendance in class session today"
+        });
+    }
     const lat1 = existCAttend.teacherLatitude;
     const lon1 = existCAttend.teacherLongitude;
     const lat2 = req.body.studentLatitude;
@@ -126,7 +140,7 @@ const addForStudent = async (req, res) => {
     const userIdFromToken = req.user.userId;
     if (userIdFromToken != existCAttend.classSessionId.subjectId.hostId) {
         return res.status(403).json({
-            message: "Unauthorized action, you are not the teacher of the subject"
+            message: "Unauthorized action, you are not the host teacher of the subject"
         });
     }
     const attendRecord = await AttendRecord.findOne({
@@ -183,7 +197,7 @@ const updateForStudent = async (req, res) => {
     const userIdFromToken = req.user.userId;
     if (userIdFromToken != existAttendRecord.cAttendId.classSessionId.subjectId.hostId) {
         return res.status(403).json({
-            message: "Unauthorized action, you are not the teacher of the subject"
+            message: "Unauthorized action, you are not the host teacher of the subject"
         });
     }
     if(!req.body.status){

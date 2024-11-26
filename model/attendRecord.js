@@ -17,6 +17,10 @@ const attendRecordSchema = new Schema({
         enum: ['CP', 'KP', 'CM'],  
         required: true,
     },
+    FCMToken: {
+        type: String,
+        required: true,
+    },
     studentLatitude: {
         type: Number,
         required: true,
