@@ -114,7 +114,7 @@ io.on('connection', (socket) => {
         const roomName = `${subjectID}_${channelID}`;  
         io.to(roomName).emit("receiveChannelMessage", message);
         try{
-            await firebase_controller.sendNotification(dataMsg, roomName);
+            await firebase_controller.sendNotification(dataMsg, subjectID);
         }catch(err){
             console.log(err)
         }
