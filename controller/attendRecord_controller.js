@@ -3,7 +3,7 @@ const User = require('../model/user.js');
 const CAttend = require('../model/cAttend.js');
 const Subject = require('../model/subject.js');
 const helper = require('../pkg/helper/helper.js');
-const tokenController = require('./token_controller.js');
+const { populate } = require('../model/token.js');
 
 const addAttendRecord = async (req, res) => {
     const isValidId = await helper.isValidObjectID(req.body.cAttendId);
@@ -20,6 +20,12 @@ const addAttendRecord = async (req, res) => {
         });
     }
 
+    if(existCAttend.updatedAt.getTime() + existCAttend.timeExpired * 60000 < Date.now()){
+        return res.status(400).json({
+            message: "Class is expired, no more attendance"
+        });
+    }
+
     const existStudent = await User.findById(req.body.studentId);
     if (!existStudent) {
         return res.status(404).json({
@@ -28,7 +34,6 @@ const addAttendRecord = async (req, res) => {
     }
     const userIdFromToken = req.user.userId;
     if (userIdFromToken != req.body.studentId) {
-        await tokenController.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });
@@ -102,5 +107,109 @@ const findByUserAndSubject = async (req, res) => {
         attendRecords: attendRecords.filter(attendRecord => attendRecord.cAttendId.classSessionId.subjectId == req.params.subjectId)
     });
 }
+const addForStudent = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.body.cAttendId);
+    if (!isValidId) {
+        return res.status(400).json({
+            message: "Invalid id"
+        });
+    }
+    const existCAttend = await CAttend.findById(req.body.cAttendId).populate({
+        path: 'classSessionId',
+        populate: {path: 'subjectId'}
+    });
+    if (!existCAttend) {
+        return res.status(404).json({
+            message: "CAttend is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if (userIdFromToken != existCAttend.classSessionId.subjectId.hostId) {
+        return res.status(403).json({
+            message: "Unauthorized action, you are not the teacher of the subject"
+        });
+    }
+    const attendRecord = await AttendRecord.findOne({
+        cAttendId: req.body.cAttendId,
+        studentId: req.body.studentId
+    });
+    if (attendRecord) {
+        return res.status(400).json({
+            message: "Attend record is already exist, please update it"
+        });
+    }
+    if(!req.body.status){
+        return res.status(400).json({
+            message: "Status is required"
+        });
+    }
+    const enumStatus = ["CM", "KP", "CP"];
+    if(!enumStatus.includes(req.body.status)){
+        return res.status(400).json({
+            message: "Invalid status"
+        });
+    }
+    const newAttendRecord = new AttendRecord(req.body);
+    await newAttendRecord.save().then((attendRecord) => {
+        return res.status(201).json({
+            attendRecord: attendRecord
+        });
+    }).catch(
+        err => {
+            return res.status(500).json({
+                message: "Internal server error: " + err
+            });
+        });
+}
+const updateForStudent = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.params.id);
+    if (!isValidId) {
+        return res.status(400).json({
+            message: "Invalid id"
+        });
+    }
+    const existAttendRecord = await AttendRecord.findById(req.params.id).populate({
+        path: 'cAttendId',
+        populate: {
+            path: 'classSessionId',
+            populate: {path: 'subjectId'}
+        }
+    });
+    if (!existAttendRecord) {
+        return res.status(404).json({
+            message: "Attend record is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if (userIdFromToken != existAttendRecord.cAttendId.classSessionId.subjectId.hostId) {
+        return res.status(403).json({
+            message: "Unauthorized action, you are not the teacher of the subject"
+        });
+    }
+    if(!req.body.status){
+        return res.status(400).json({
+            message: "Status is required"
+        });
+    }
+    const enumStatus = ["CM", "KP", "CP"];
+    if(!enumStatus.includes(req.body.status)){
+        return res.status(400).json({
+            message: "Invalid status"
+        });
+    }
+    const update = {
+        status: req.body.status
+    }
+    await AttendRecord.findByIdAndUpdate(req.params.id, update, {new: true}).then((attendRecord) => {
+        return res.status(200).json({
+            attendRecord: attendRecord
+        });
+    }).catch(
+        err => {
+            return res.status(500).json({
+                message: "Internal server error: " + err
+            });
+        });
+}
 
-module.exports = { addAttendRecord, findByUserAndSubject};
+module.exports = { addAttendRecord, findByUserAndSubject, addForStudent, updateForStudent };

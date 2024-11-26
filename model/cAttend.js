@@ -28,6 +28,13 @@ const cAttendSchema = new Schema({
         required: true,
         default: true,
     },
+    timeExpired: {
+        type: Number,
+        required: true,
+        default: 10,//minutes
+    }
+}, {
+    timestamps: true
 });
 cAttendSchema.virtual("id").get(function(){
     return this._id.toHexString

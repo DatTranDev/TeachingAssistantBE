@@ -20,10 +20,12 @@ const attendRecordSchema = new Schema({
     studentLatitude: {
         type: Number,
         required: true,
+        default: 0,
     },
     studentLongitude: {
         type: Number,
         required: true,
+        default: 0,
     },
 }, {
     timestamps: true

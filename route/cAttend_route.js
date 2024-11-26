@@ -9,4 +9,6 @@ route.get('/findBySubject/:subjectId',auth.authenticateToken, cAttendController.
 route.patch('/update/:id', auth.authenticateToken, cAttendController.updateCAttend);
 route.delete('/delete/:cAttendId', auth.authenticateToken, cAttendController.deleteCAttend);
 route.post('/attendRecord/add', auth.authenticateToken, attendRecordController.addAttendRecord);
+route.post('/attendRecord/add/forStudent', auth.authenticateToken, attendRecordController.addForStudent);
+route.patch('/attendRecord/update/forStudent/:id', auth.authenticateToken, attendRecordController.updateForStudent);
 module.exports = route;
