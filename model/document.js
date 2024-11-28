@@ -14,9 +14,9 @@ const documentSchema = new Schema({
         type: String,
         required: true,
     },
-    channelId: {
+    cAttendId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Channel',
+        ref: 'CAttend',
         required: true,
     },
 });

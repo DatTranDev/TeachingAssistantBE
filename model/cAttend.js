@@ -17,21 +17,23 @@ const cAttendSchema = new Schema({
     },
     teacherLatitude: {
         type: Number,
+        default: 0,
         required: true,
     },
     teacherLongitude: {
         type: Number,
+        default: 0,
         required: true,
     },
     isActive: {
         type: Boolean,
         required: true,
-        default: true,
+        default: false,
     },
     timeExpired: {
         type: Number,
         required: true,
-        default: 10,//minutes
+        default: 0,//minutes
     }
 }, {
     timestamps: true

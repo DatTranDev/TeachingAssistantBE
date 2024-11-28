@@ -2,8 +2,7 @@ const {initializeApp, cert} = require("firebase-admin/app")
 const { getMessaging} = require("firebase-admin/messaging")
 const { getStorage, getDownloadURL} = require("firebase-admin/storage");
 const Document = require("../model/document.js");
-const Channel = require("../model/channel.js");
-const { type } = require("os");
+const CAttend = require("../model/cAttend.js");
 const path = require("path")
 require("dotenv").config({path: path.join(__dirname, "../.env")});
 const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS)
@@ -99,15 +98,15 @@ const uploadFile = async (req, res) => {
     const file = req.file;
     if(!file) 
       return res.status(400).send('No file in the request')
-    const {name, type, channelId} = req.query;
-    if(!name || !type || !channelId)
+    const {name, type, cAttendId} = req.query;
+    if(!name || !type || !cAttendId)
     {
-        console.log(name, type, channelId)
-        return res.status(400).send('Missing name, type or channelId')
+        console.log(name, type, cAttendId)
+        return res.status(400).send('Missing name, type or cAttendId')
     }
-    const channel = await Channel.findById(channelId);
-    if(!channel)
-        return res.status(404).send('Channel not found')
+    const cAttend = await CAttend.findById(cAttendId);
+    if(!cAttend)
+        return res.status(404).send('CAttend not found')
     const timestamp = Date.now();
     const originalName = req.file.originalname;
     const newFileName = `${originalName}_${timestamp}`;
@@ -126,7 +125,7 @@ const uploadFile = async (req, res) => {
         name: name,
         dowloadUrl: downloadURL,
         type: type,
-        channelId: channelId
+        cAttendId: cAttendId
     })
     await document.save().then(document=>{
         return res.json({

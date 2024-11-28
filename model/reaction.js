@@ -7,9 +7,9 @@ const reactionSchema = new Schema({
         ref: 'User',
         required: true,
     },
-    postId: {
+    discussionId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Post',
+        ref: 'Discussion',
         required: true,
     },
     type: {
@@ -19,7 +19,7 @@ const reactionSchema = new Schema({
     },
 });
 
-reactionSchema.index({ userId: 1, postId: 1 }, { unique: true });
+reactionSchema.index({ userId: 1, discussionId: 1 }, { unique: true });
 reactionSchema.virtual("id").get(function(){
     return this._id.toHexString
 });

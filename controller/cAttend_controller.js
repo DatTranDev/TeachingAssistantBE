@@ -6,6 +6,7 @@ const UserSubject = require('../model/userSubject.js');
 const ClassSession = require('../model/classSession.js');
 const Review = require('../model/review.js');
 const AttendRecord = require('../model/attendRecord.js');
+const Document = require('../model/document.js');
 
 const addCAttend = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.body.classSessionId);
@@ -183,6 +184,14 @@ const deleteCAttend = async(req, res)=>{
                 message: "Internal server error: "+err
             });
         });    
+    await Document.deleteMany({
+        cAttendId: cAttendId
+    }).catch(
+        err=>{
+            return res.status(500).json({
+                message: "Internal server error: "+err
+            });
+        });
     await CAttend.deleteOne({ _id: req.params.cAttendId })
     .then(async () => {
         // Decrease the currentSession of the subject
@@ -191,6 +200,17 @@ const deleteCAttend = async(req, res)=>{
             subject.currentSession -= 1;
             await subject.save();
         }
+        //Decrease the session number of other cAttends
+        const cAttends = await CAttend.find({
+            classSessionId: cAttend.classSessionId
+        });
+        await Promise.all(cAttends.map(async (cAttend) => {
+            if (cAttend.sessionNumber > cAttend.sessionNumber) {
+                cAttend.sessionNumber -= 1;
+                await cAttend.save();
+            }
+        }));
+
 
         return res.status(200).json({
             message: "CAttend deleted successfully"
