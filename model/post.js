@@ -19,7 +19,15 @@ const postSchema = new Schema({
     content: {
         type: String,
         required: true,
-    }
+    },
+    isResolved: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+    images: [
+        {type: String}
+    ]
 }, {
     timestamps: true
 });
@@ -30,5 +38,5 @@ postSchema.set('toJSON',{
     "virtuals": true
 });
 
-const PostModel = mongoose.model('Post', postSchema);
-module.exports = PostModel;
+const Post = mongoose.model('Post', postSchema);
+module.exports = Post;

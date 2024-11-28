@@ -1,6 +1,8 @@
 const {initializeApp, cert} = require("firebase-admin/app")
 const { getMessaging} = require("firebase-admin/messaging")
 const { getStorage, getDownloadURL} = require("firebase-admin/storage");
+const Document = require("../model/document.js");
+const Channel = require("../model/channel.js");
 const { type } = require("os");
 const path = require("path")
 require("dotenv").config({path: path.join(__dirname, "../.env")});
@@ -68,13 +70,81 @@ const uploadImage = async (req, res) => {
         image: downloadURL
     })
 }
+const uploadImages = async (req, res) => {
+    const files = req.files;
+    if(!files)
+        return res.status(400).send('No images in the request')
+    const timestamp = Date.now();
+    const images = [];
+    await Promise.all(files.map(async file=>{
+        const originalName = file.originalname;
+        const newFileName = `${originalName}_${timestamp}`;
+        const storageRef = bucket.file(`files/${newFileName}`)
+        const metaData= {
+            contentType: file.mimetype
+        }
+        const snapShot = await storageRef.save(file.buffer, {
+            metadata: metaData
+        }).catch(err=>{
+          return res.status(500).send(err)
+        })
+        const downloadURL = await getDownloadURL(storageRef)
+        images.push(downloadURL)
+    }))
+    return res.json({
+        images: images
+    })
+}
+const uploadFile = async (req, res) => {
+    const file = req.file;
+    if(!file) 
+      return res.status(400).send('No file in the request')
+    const {name, type, channelId} = req.query;
+    if(!name || !type || !channelId)
+    {
+        console.log(name, type, channelId)
+        return res.status(400).send('Missing name, type or channelId')
+    }
+    const channel = await Channel.findById(channelId);
+    if(!channel)
+        return res.status(404).send('Channel not found')
+    const timestamp = Date.now();
+    const originalName = req.file.originalname;
+    const newFileName = `${originalName}_${timestamp}`;
+
+    const storageRef = bucket.file(`files/${newFileName}`)
+    const metaData= {
+        contentType: req.file.mimetype
+    }
+    const snapShot = await storageRef.save(req.file.buffer, {
+        metadata: metaData
+    }).catch(err=>{
+      return res.status(500).send(err)
+    })
+    const downloadURL = await getDownloadURL(storageRef)
+    const document = new Document({
+        name: name,
+        dowloadUrl: downloadURL,
+        type: type,
+        channelId: channelId
+    })
+    await document.save().then(document=>{
+        return res.json({
+            document: document
+        })
+    }).catch(err=>{
+        return res.status(500).send(err)
+    })
+    
+}
 const subscribeToTopic = async (req, res) => {
     const {token, topics} = req.body;
     if(!token || !topics) 
         return res.status(400).send('Missing token or topic')
     try{
-        for(let topic of topics)
+        await Promise.all(topics.map(async topic=>{
             await messaging.subscribeToTopic(token, topic)
+        }))
     }catch(err){
         return res.status(500).json({
           message: 'Failed to subscribe to topic '+err  
@@ -87,8 +157,9 @@ const unsubscribeFromTopics = async (req, res) => {
     if(!token || !topics) 
         return res.status(400).send('Missing token or topic')
     try{
-        for(let topic of topics)
+        await Promise.all(topics.map(async topic=>{
             await messaging.unsubscribeFromTopic(token, topic)
+        }))
     }catch(err){
         return res.status(500).json({
           message: 'Failed to unsubscribe from topic '+err  
@@ -165,6 +236,8 @@ const unsubscribe = async(token, topic)=>{
 
 module.exports = {
     uploadImage, 
+    uploadImages,
+    uploadFile,
     subscribeToTopic, 
     unsubscribeFromTopics, 
     sendNotification, 

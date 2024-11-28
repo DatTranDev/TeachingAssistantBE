@@ -32,5 +32,5 @@ classSessionSchema.set('toJSON',{
     "virtuals": true
 });
 
-const ClassSessionModel = mongoose.model('ClassSession', classSessionSchema);
-module.exports = ClassSessionModel;
+const ClassSession = mongoose.model('ClassSession', classSessionSchema);
+module.exports = ClassSession;

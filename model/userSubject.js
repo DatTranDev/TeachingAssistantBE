@@ -24,5 +24,5 @@ userSubjectSchema.set('toJSON',{
     "virtuals": true
 });
 
-const UserSubjectModel = mongoose.model('UserSubject', userSubjectSchema);
-module.exports = UserSubjectModel;
+const UserSubject = mongoose.model('UserSubject', userSubjectSchema);
+module.exports = UserSubject;

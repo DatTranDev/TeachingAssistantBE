@@ -1,6 +1,7 @@
 const Post = require('../model/post.js');
 const Channel = require('../model/channel.js');
 const User = require('../model/user.js');
+const Reaction = require('../model/reaction.js');
 const helper = require('../pkg/helper/helper.js');
 
 const addPost = async(req, res)=>{
@@ -77,8 +78,14 @@ const findByChannelId = async(req, res)=>{
         const creator = await User.findOne({
             _id: post.creator
         }).select("-password");
+        const reactions = await Reaction.find({postId: post._id}).populate({
+            path: 'userId',
+            select: '-password'
+        });
+
         post = post.toJSON();
         post.user = creator;
+        post.reactions = reactions;
         return post;
     }));
     results.posts = postsWithCreator;

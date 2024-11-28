@@ -42,5 +42,5 @@ subjectSchema.set('toJSON',{
     "virtuals": true
 });
 
-const SubjectModel = mongoose.model('Subject', subjectSchema);
-module.exports = SubjectModel;
+const Subject = mongoose.model('Subject', subjectSchema);
+module.exports = Subject;

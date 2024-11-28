@@ -1,4 +1,3 @@
-const { channel } = require('diagnostics_channel');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 

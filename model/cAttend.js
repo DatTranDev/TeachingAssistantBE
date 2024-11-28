@@ -43,5 +43,5 @@ cAttendSchema.set('toJSON',{
     "virtuals": true
 });
 
-const CAttendModel = mongoose.model('CAttend', cAttendSchema);
-module.exports = CAttendModel;
+const CAttend = mongoose.model('CAttend', cAttendSchema);
+module.exports = CAttend;

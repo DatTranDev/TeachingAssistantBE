@@ -42,5 +42,5 @@ attendRecordSchema.set('toJSON',{
     "virtuals": true
 });
 
-const AttendRecordModel = mongoose.model('AttendRecord', attendRecordSchema);
-module.exports = AttendRecordModel;
+const AttendRecord = mongoose.model('AttendRecord', attendRecordSchema);
+module.exports = AttendRecord;
