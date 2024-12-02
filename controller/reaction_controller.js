@@ -26,6 +26,11 @@ const createReaction = async (req, res) => {
     if (!existUserSubject) {
         return res.status(400).json({ error: "User is not subscribed to the subject of the discussion" });
     }
+    const enums = [1, 2, 3]
+    if(!enums.includes(type))
+    {
+        return res.status(400).json({ error: "Invalid type" });
+    }
     try {
         const reaction = new Reaction({
             userId: userId,
@@ -42,6 +47,11 @@ const updateReaction = async (req, res) => {
     const {type} = req.body;
     if (!type) {
         return res.status(400).json({ error: "Missing required fields" });
+    }
+    const enums = [1, 2, 3]
+    if(!enums.includes(type))
+    {
+        return res.status(400).json({ error: "Invalid type" });
     }
     try {
         const reaction = await Reaction.findOne(req.params.id);
