@@ -78,10 +78,6 @@ const findByChannelId = async(req, res)=>{
         const creator = await User.findOne({
             _id: post.creator
         }).select("-password");
-        const reactions = await Reaction.find({postId: post._id}).populate({
-            path: 'userId',
-            select: '-password'
-        });
 
         post = post.toJSON();
         post.user = creator;

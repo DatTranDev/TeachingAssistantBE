@@ -120,7 +120,18 @@ const findByCAttendId = async(req, res)=>{
             select: '-password'
         }).exec();
     }
-    results.discussions = discussions;
+    discussions = await Promise.all(discussions.map(async(discussion)=>{
+        const reactions = await Reaction.find({
+            discussionId: discussion._id
+        }).populate({
+            path: 'userId',
+            select: '-password'
+        });
+        discussion = discussion.toJSON();
+        discussion.reactions = reactions;
+        return discussion;
+    }));
+    results.discussions = discussions
     return res.status(200).json(results);
 }
 module.exports = {
