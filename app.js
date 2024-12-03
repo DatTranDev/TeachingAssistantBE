@@ -125,8 +125,8 @@ io.on('connection', (socket) => {
         //console.log(`Message from ${dataMsg.sender} sent to channel room: ${roomName}`);
     });
 
-    socket.on("sendReaction", ({ subjectID, channelID, messageID, reaction }) => {
-        const roomName = `${subjectID}_${channelID}`;  
+    socket.on("sendReaction", ({ subjectID, messageID, reaction }) => {
+        const roomName = `${subjectID}`;  
         io.to(roomName).emit("receiveReaction", { messageID, reaction });
     });
 

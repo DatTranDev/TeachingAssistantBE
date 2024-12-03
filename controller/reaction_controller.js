@@ -22,6 +22,8 @@ const createReaction = async (req, res) => {
     if (!existdiscussion) {
         return res.status(404).json({ error: "Discussion not found" });
     }
+    if(!existdiscussion.isResolved)
+        return res.status(400).json({ error: "Discussion is not resolved, can't reaction" });
     const existUserSubject = await UserSubject.findOne({ userId: userId, subjectId: existdiscussion.cAttendId.classSessionId.subjectId });
     if (!existUserSubject) {
         return res.status(400).json({ error: "User is not subscribed to the subject of the discussion" });
@@ -54,7 +56,7 @@ const updateReaction = async (req, res) => {
         return res.status(400).json({ error: "Invalid type" });
     }
     try {
-        const reaction = await Reaction.findOne(req.params.id);
+        const reaction = await Reaction.findOne({ _id: req.params.id });
         if (!reaction) {
             return res.status(404).json({ error: "Reaction not found" });
         }
