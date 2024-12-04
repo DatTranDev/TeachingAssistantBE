@@ -14,6 +14,7 @@ const authJWT = ()=>{
             `${api}/user/login`,
             `${api}/user/changepassword`,
             `${api}/service/sendEmail`,
+            `${api}/upload/image`,
             new RegExp(`${api}/token/deleteall/.*`)
         ]
     })
