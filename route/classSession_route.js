@@ -7,5 +7,6 @@ route.post('/add', auth.authenticateToken, classSessionController.addClassSessio
 route.get('/findByUser/:userId', auth.authenticateToken, classSessionController.findByUserId);
 route.patch('/update/:id', auth.authenticateToken, classSessionController.updateClassSession);
 route.delete('/delete/:id', auth.authenticateToken, classSessionController.deleteClassSession);
+route.get('/findBySubject/:subjectId', auth.authenticateToken, classSessionController.findBySubjectId);
 
 module.exports = route; 

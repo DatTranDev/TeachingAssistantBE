@@ -213,9 +213,42 @@ const deleteClassSession = async(req, res)=>{
             });
         });
 }
+const findBySubjectId = async(req, res)=>{
+    const isValidId = await helper.isValidObjectID(req.params.subjectId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const existSubject = await Subject.findOne({
+        _id: req.params.subjectId
+    });
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    const userSubject = await UserSubject.findOne({
+        userId: userIdFromToken,
+        subjectId: existSubject._id
+    });
+    if(!userSubject){
+        return res.status(404).json({
+            message: "User is not a member of the subject"
+        });
+    }
+    const classSessions = await ClassSession.find({
+        subjectId: req.params.subjectId
+    });
+    return res.status(200).json({
+        classSessions: classSessions
+    });
+}
 module.exports = {
     addClassSession, 
     findByUserId, 
     updateClassSession,
-    deleteClassSession
+    deleteClassSession,
+    findBySubjectId
 };
