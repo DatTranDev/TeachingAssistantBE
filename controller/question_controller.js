@@ -196,7 +196,8 @@ const findBySubjectId = async(req, res)=>{
         };
     }
     try{
-        results.questions = await Question.find({subjectId: req.params.subjectId}).limit(limit).skip(startIndex).exec();
+        results.questions = await Question.find({subjectId: req.params.subjectId}).
+        populate('studentId').limit(limit).skip(startIndex).exec();
         return res.status(200).json(results);
     } catch(err){
         return res.status(500).json({

@@ -61,6 +61,24 @@ const addSubject = async(req, res)=>{
                 message: "Internal server error: "+err
             });
         });
+    const sessions = req.body.sessions;
+    if(sessions)
+        await Promise.all(sessions.map(async session=>{
+            const newClassSession = new ClassSession({
+                subjectId: subject._id,
+                dayOfWeek: session.dayOfWeek,
+                end: session.end,
+                start: session.start,
+                room: session.room,
+            });
+            await newClassSession.save().catch(
+                err=>{
+                    return res.status(500).json({
+                        message: "Internal server error: "+err
+                    });
+                });
+        }));
+
     const userSubject = new UserSubject({
         userId: req.body.hostId,
         subjectId: subject._id,
