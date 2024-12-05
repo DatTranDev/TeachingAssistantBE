@@ -28,20 +28,21 @@ const addSubject = async(req, res)=>{
         });
     }
     
-    const startDay = helper.parseDate(req.body.startDay);
-    const endDay = helper.parseDate(req.body.endDay);
+    //Note: Client don't use startDay and endDay
+    const startDay = helper.parseDate('01/01/2024');
+    const endDay = helper.parseDate('02/01/2024');
 
     
-    if(isNaN(startDay.getTime()) || isNaN(endDay.getTime())){
-        return res.status(400).json({
-            message: "Invalid date format, following dd/mm/yyyy"
-        });
-    }
-    if(startDay.getTime() > endDay.getTime()){
-        return res.status(400).json({
-            message: "Start day must be before end day"
-        });
-    }
+    // if(isNaN(startDay.getTime()) || isNaN(endDay.getTime())){
+    //     return res.status(400).json({
+    //         message: "Invalid date format, following dd/mm/yyyy"
+    //     });
+    // }
+    // if(startDay.getTime() > endDay.getTime()){
+    //     return res.status(400).json({
+    //         message: "Start day must be before end day"
+    //     });
+    // }
     req.body.startDay = startDay;
     req.body.endDay = endDay;
     let newSubject = new Subject(req.body);
