@@ -13,4 +13,5 @@ route.get('/findByUserId/:userId',auth.authenticateToken, subjectController.find
 route.get('/avgReview/:subjectId',subjectController.getAvgRating);
 route.get('/:subjectId/user/:userId/attendRecords', attendRecordController.findByUserAndSubject);
 route.get('/:subjectId/user/:userId/reviews', reviewController.findBySubjectAndUser);
+route.get('/students/:subjectId', subjectController.getStudents);
 module.exports = route;

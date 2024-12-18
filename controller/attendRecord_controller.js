@@ -148,9 +148,17 @@ const addForStudent = async (req, res) => {
         studentId: req.body.studentId
     });
     if (attendRecord) {
-        return res.status(400).json({
-            message: "Attend record is already exist, please update it"
-        });
+        attendRecord.status = req.body.status;
+        await attendRecord.save().then((attendRecord) => {
+            return res.status(200).json({
+                attendRecord: attendRecord
+            });
+        }).catch(
+            err => {
+                return res.status(500).json({
+                    message: "Internal server error: " + err
+                });
+            });
     }
     if(!req.body.status){
         return res.status(400).json({

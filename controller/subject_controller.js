@@ -406,6 +406,34 @@ const getAvgRating = async(req, res)=>{
     });
 };
 
+const getStudents = async(req, res)=>{
+    const isValidId = await helper.isValidObjectID(req.params.subjectId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const existSubject = await Subject.findById(req.params.subjectId);
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const userSubjects = await UserSubject.find({
+        subjectId: req.params.subjectId
+    }).populate({
+        path: 'userId',
+        select: '-password'
+    });
+    const students = userSubjects
+    .filter(userSubject=>userSubject.role == 'student')
+    .map(
+        userSubject=>userSubject.userId
+    )
+    return res.status(200).json({
+        students: students
+    });
+}
 
 module.exports = {
     addSubject, 
@@ -413,5 +441,6 @@ module.exports = {
     updateSubject, 
     deleteSubject, 
     findByUserId,
-    getAvgRating
+    getAvgRating,
+    getStudents
 };

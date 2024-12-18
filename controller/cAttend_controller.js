@@ -222,9 +222,38 @@ const deleteCAttend = async(req, res)=>{
         });
     });
 }
+const getAttendStudent = async(req, res)=>{
+    const isValidId = await helper.isValidObjectID(req.params.cAttendId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid cAttend id"
+        });
+    }
+    const existCAttend = await CAttend.findOne({
+        _id: req.params.cAttendId
+    });
+    if(!existCAttend){
+        return res.status(404).json({
+            message: "CAttend is not found"
+        });
+    }
+    const attendRecords = await AttendRecord.find({
+        cAttendId: req.params.cAttendId
+    }).populate({
+        path: 'studentId',
+        select: '-password'
+    });
+    const students = attendRecords.map((attendRecord)=>{
+        return attendRecord.studentId;
+    });
+    return res.status(200).json({
+        students: students
+    });
+}
 module.exports = {
     addCAttend,
     findBySubjectId,
     updateCAttend,
-    deleteCAttend
+    deleteCAttend,
+    getAttendStudent
 }

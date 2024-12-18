@@ -11,4 +11,5 @@ route.delete('/delete/:cAttendId', auth.authenticateToken, cAttendController.del
 route.post('/attendRecord/add', auth.authenticateToken, attendRecordController.addAttendRecord);
 route.post('/attendRecord/add/forStudent', auth.authenticateToken, attendRecordController.addForStudent);
 route.patch('/attendRecord/update/forStudent/:id', auth.authenticateToken, attendRecordController.updateForStudent);
+route.get('/attendStudents/:cAttendId', auth.authenticateToken, cAttendController.getAttendStudent);
 module.exports = route;
