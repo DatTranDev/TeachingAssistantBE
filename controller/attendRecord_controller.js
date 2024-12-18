@@ -20,7 +20,7 @@ const addAttendRecord = async (req, res) => {
         });
     }
 
-    if(existCAttend.updatedAt.getTime() + existCAttend.timeExpired * 60000 < Date.now()){
+    if(existCAttend.updatedAt.getTime() + existCAttend.timeExpired * 60000 < Date.now()||!existCAttend.isActive){
         return res.status(400).json({
             message: "Class is expired, no more attendance"
         });
