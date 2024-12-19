@@ -250,10 +250,30 @@ const getAttendStudent = async(req, res)=>{
         students: students
     });
 }
+const findById = async(req, res)=>{
+    const isValidId = await helper.isValidObjectID(req.params.id);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid cAttend id"
+        });
+    }
+    const cAttend = await CAttend.findOne({
+        _id: req.params.id
+    });
+    if(!cAttend){
+        return res.status(404).json({
+            message: "CAttend is not found"
+        });
+    }
+    return res.status(200).json({
+        cAttend: cAttend
+    });
+}
 module.exports = {
     addCAttend,
     findBySubjectId,
     updateCAttend,
     deleteCAttend,
-    getAttendStudent
+    getAttendStudent,
+    findById
 }
