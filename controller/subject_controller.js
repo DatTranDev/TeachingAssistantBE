@@ -434,7 +434,27 @@ const getStudents = async(req, res)=>{
         students: students
     });
 }
-
+const findSubjectById = async(req, res)=>{
+    const isValidId = await helper.isValidObjectID(req.params.id);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const subject = await Subject.findById(req.params.id);
+    if(!subject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const classSessions = await ClassSession.find({
+        subjectId: req.params.id
+    });
+    return res.status(200).json({
+        subject: subject,
+        classSessions: classSessions
+    });
+}
 module.exports = {
     addSubject, 
     joinSubject, 
@@ -442,5 +462,6 @@ module.exports = {
     deleteSubject, 
     findByUserId,
     getAvgRating,
-    getStudents
+    getStudents,
+    findSubjectById
 };
