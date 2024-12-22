@@ -232,6 +232,23 @@ const unsubscribe = async(token, topic)=>{
     );
     return true;
   }
+const getURL = async (file) => {
+    const timestamp = Date.now();
+    const originalName = file.originalname;
+    const newFileName = `${originalName}_${timestamp}`;
+
+    const storageRef = bucket.file(`files/${newFileName}`)
+    const metaData= {
+        contentType: file.mimetype
+    }
+    const snapShot = await storageRef.save(file.buffer, {
+        metadata: metaData
+    }).catch(err=>{
+      return null;
+    })
+    const downloadURL = await getDownloadURL(storageRef)
+    return downloadURL
+}
 
 module.exports = {
     uploadImage, 
@@ -242,5 +259,6 @@ module.exports = {
     sendNotification, 
     subscribe, 
     unsubscribe, 
-    sendToSpecificDevice
+    sendToSpecificDevice,
+    getURL
 };

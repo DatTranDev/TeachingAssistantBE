@@ -14,6 +14,7 @@
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "excel4node": "^1.8.2",
     "express": "^4.21.0",
     "express-jwt": "^8.4.1",
     "firebase": "^11.0.0",
