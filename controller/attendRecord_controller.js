@@ -70,9 +70,6 @@ const addAttendRecord = async (req, res) => {
     }else{
         req.body.status = "KP";
     }
-    if(!existCAttend.isActive){
-        req.body.status = "KP";
-    }
     const newAttendRecord = new AttendRecord(req.body);
     await newAttendRecord.save().then((attendRecord) => {
         return res.status(201).json({
