@@ -544,7 +544,7 @@ const getClassSessions = async(id)=>{
     return classSession;
 }
 const getCAttends = async(classSessions)=>{
-    if(classSessions.length == 0||!classSessions){
+    if(!classSessions){
         return [];
     }
     const cAttends = await CAttend.find({
