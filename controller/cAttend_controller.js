@@ -7,6 +7,7 @@ const ClassSession = require('../model/classSession.js');
 const Review = require('../model/review.js');
 const AttendRecord = require('../model/attendRecord.js');
 const Document = require('../model/document.js');
+const path = require('path');
 
 const addCAttend = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.body.classSessionId);
@@ -269,11 +270,53 @@ const findById = async(req, res)=>{
         cAttend: cAttend
     });
 }
+
+const resetAttendance = async(req, res)=>{
+    const isValidId = await helper.isValidObjectID(req.params.cAttendId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid cAttend id"
+        });
+    }
+    const existCAttend = await CAttend.findOne({
+        _id: req.params.cAttendId
+    }).populate({
+        path: 'classSessionId',
+        populate: {
+            path: 'subjectId'
+        }
+    });
+    if(!existCAttend){
+        return res.status(404).json({
+            message: "CAttend is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if(existCAttend.classSessionId.subjectId.hostId != userIdFromToken){
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
+
+    existCAttend.isActive = false;
+    existCAttend.timeExpired = 0;
+    existCAttend.teacherLatitude = 0;
+    existCAttend.teacherLongitude = 0;
+    await existCAttend.save();
+    await AttendRecord.deleteMany({
+        cAttendId: req.params.cAttendId
+    });
+
+    return res.status(200).json({
+        message: "Attendance is reset and all related records are deleted"
+    });
+}
 module.exports = {
     addCAttend,
     findBySubjectId,
     updateCAttend,
     deleteCAttend,
     getAttendStudent,
-    findById
+    findById,
+    resetAttendance
 }

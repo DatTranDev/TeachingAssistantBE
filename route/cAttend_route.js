@@ -13,4 +13,5 @@ route.post('/attendRecord/add', auth.authenticateToken, attendRecordController.a
 route.post('/attendRecord/add/forStudent', auth.authenticateToken, attendRecordController.addForStudent);
 route.patch('/attendRecord/update/forStudent/:id', auth.authenticateToken, attendRecordController.updateForStudent);
 route.get('/attendStudents/:cAttendId', auth.authenticateToken, cAttendController.getAttendStudent);
+route.patch('/reset/:cAttendId', auth.authenticateToken, cAttendController.resetAttendance);
 module.exports = route;
