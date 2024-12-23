@@ -83,11 +83,12 @@ const updateQuestion = async(req, res)=>{
         subjectId: existQuestion.subjectId,
         role: "teacher"
     });
-    if(!userSubject){
+    if(!userSubject&&userIdFromToken!=existQuestion.studentId){
         return res.status(403).json({
             message: "Unauthorized action"
         });
     }
+
     const status = req.body.isResolved;
 
     await Question.findByIdAndUpdate(req.params.id, {isResolved: status}).then((question)=>{
