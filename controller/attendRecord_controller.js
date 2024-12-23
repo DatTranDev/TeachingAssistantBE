@@ -43,44 +43,63 @@ const addAttendRecord = async (req, res) => {
         studentId: req.body.studentId
     });
     if (attendRecord) {
-        return res.status(400).json({
-            message: "Attend record is already exist, please update it"
-        });
-    }
-    if(!req.body.FCMToken){
-        return res.status(400).json({
-            message: "FCMToken is required"
-        });
-    }
-    const existAttendRecord = await AttendRecord.findOne({
-        cAttendId: req.body.cAttendId,
-        FCMToken: req.body.FCMToken
-    });
-    if(existAttendRecord){
-        return res.status(400).json({
-            message: "This device is already used for attendance in class session today"
-        });
-    }
-    const lat1 = existCAttend.teacherLatitude;
-    const lon1 = existCAttend.teacherLongitude;
-    const lat2 = req.body.studentLatitude;
-    const lon2 = req.body.studentLongitude;
-    if(helper.isPresent(helper.getDistanceInKm(lat1, lon1, lat2, lon2))){
-        req.body.status = "CM";
-    }else{
-        req.body.status = "KP";
-    }
-    const newAttendRecord = new AttendRecord(req.body);
-    await newAttendRecord.save().then((attendRecord) => {
-        return res.status(201).json({
-            attendRecord: attendRecord
-        });
-    }).catch(
-        err => {
-            return res.status(500).json({
-                message: "Internal server error: " + err
+        const lat1 = existCAttend.teacherLatitude;
+        const lon1 = existCAttend.teacherLongitude;
+        const lat2 = req.body.studentLatitude;
+        const lon2 = req.body.studentLongitude;
+        if(helper.isPresent(helper.getDistanceInKm(lat1, lon1, lat2, lon2))){
+            req.body.status = "CM";
+        }else{
+            req.body.status = "KP";
+        }
+        attendRecord.status = req.body.status;
+        await attendRecord.save().then((attendRecord) => {
+            return res.status(200).json({
+                attendRecord: attendRecord
             });
+        }).catch(
+            err => {
+                return res.status(500).json({
+                    message: "Internal server error: " + err
+                });
+            });
+    }
+    else{
+        if(!req.body.FCMToken){
+            return res.status(400).json({
+                message: "FCMToken is required"
+            });
+        }
+        const existAttendRecord = await AttendRecord.findOne({
+            cAttendId: req.body.cAttendId,
+            FCMToken: req.body.FCMToken
         });
+        if(existAttendRecord){
+            return res.status(400).json({
+                message: "This device is already used for attendance in class session today"
+            });
+        }
+        const lat1 = existCAttend.teacherLatitude;
+        const lon1 = existCAttend.teacherLongitude;
+        const lat2 = req.body.studentLatitude;
+        const lon2 = req.body.studentLongitude;
+        if(helper.isPresent(helper.getDistanceInKm(lat1, lon1, lat2, lon2))){
+            req.body.status = "CM";
+        }else{
+            req.body.status = "KP";
+        }
+        const newAttendRecord = new AttendRecord(req.body);
+        await newAttendRecord.save().then((attendRecord) => {
+            return res.status(201).json({
+                attendRecord: attendRecord
+            });
+        }).catch(
+            err => {
+                return res.status(500).json({
+                    message: "Internal server error: " + err
+                });
+            });
+    }
 }
 const findByUserAndSubject = async (req, res) => {
     const isValidId = await helper.isValidObjectID(req.params.userId);
