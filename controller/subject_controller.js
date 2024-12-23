@@ -544,6 +544,9 @@ const getClassSessions = async(id)=>{
     return classSession;
 }
 const getCAttends = async(classSessions)=>{
+    if(classSessions.length == 0||!classSessions){
+        return [];
+    }
     const cAttends = await CAttend.find({
         classSessionId: {
             $in: classSessions.map(classSession=>classSession._id)
