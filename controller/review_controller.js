@@ -70,6 +70,52 @@ const addReview = async (req, res) => {
             });
         });
 }
+const updateReview = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.params.id);
+    if (!isValidId) {
+        return res.status(400).json({
+            message: "Invalid id"
+        });
+    }
+    const existReview = await Review.findById(req.params.id);
+    if (!existReview) {
+        return res.status(404).json({
+            message: "Review is not found"
+        });
+    }
+    await Review.findByIdAndUpdate(req.params.id, req.body, { new: true }).then((review) => {
+        return res.status(200).json({
+            review: review
+        });
+    }).catch(
+        err => {
+            return res.status(500).json({
+                message: "Internal server error: " + err
+            });
+        });
+}
+const deleteReview = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.params.id);
+    if (!isValidId) {
+        return res.status(400).json({
+            message: "Invalid id"
+        });
+    }
+    const existReview = await Review.findById(req.params.id);
+    if (!existReview) {
+        return res.status(404).json({
+            message: "Review is not found"
+        });
+    }
+    await Review.findByIdAndDelete(req.params.id).then(() => {
+        return res.status(204).json();
+    }).catch(
+        err => {
+            return res.status(500).json({
+                message: "Internal server error: " + err
+            });
+        });
+}
 
 const findReviewByCAttendId = async (req, res) => {
     const isValidId = await helper.isValidObjectID(req.params.cAttendId);
@@ -146,4 +192,4 @@ const findBySubjectAndUser = async (req, res) => {
         reviews: reviews.filter(review => review.cAttendId.classSessionId.subjectId == req.params.subjectId)
     });
 }
-module.exports = { addReview, findReviewByCAttendId, findBySubjectAndUser };
+module.exports = { addReview, findReviewByCAttendId, findBySubjectAndUser, updateReview, deleteReview };

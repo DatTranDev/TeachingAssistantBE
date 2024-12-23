@@ -217,6 +217,12 @@ const leaveSubject = async(req, res)=>{
                 $in: cAttends.map(cAttend=>cAttend._id)
             }
         });
+        await Review.deleteMany({
+            studentId: studentId,
+            cAttendId: {
+                $in: cAttends.map(cAttend=>cAttend._id)
+            }
+        });
         return res.status(200).json({
             message: "User is removed from subject successfully"
         });
