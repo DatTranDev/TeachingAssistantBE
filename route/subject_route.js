@@ -8,8 +8,11 @@ const auth = require('../pkg/auth/authentication.js');
 
 route.post('/add',auth.authenticateToken, subjectController.addSubject);
 route.post('/join',auth.authenticateToken, subjectController.joinSubject);
+route.post('/leave',auth.authenticateToken, subjectController.leaveSubject);
+
 route.patch('/update/:id',auth.authenticateToken, subjectController.updateSubject);
 route.delete('/delete/:id',auth.authenticateToken, subjectController.deleteSubject);
+
 route.get('/:id', subjectController.findSubjectById);
 route.get('/findByUserId/:userId',auth.authenticateToken, subjectController.findByUserId);
 route.get('/avgReview/:subjectId',subjectController.getAvgRating);

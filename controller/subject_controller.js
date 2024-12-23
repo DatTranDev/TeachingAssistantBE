@@ -2,6 +2,7 @@ const Subject = require('../model/subject.js');
 const User = require('../model/user.js');
 const UserSubject = require('../model/userSubject.js');
 const Question = require('../model/question.js');
+const Discussion = require('../model/discussion.js');
 const Channel = require('../model/channel.js');
 const Post = require('../model/post.js');
 const CAttend = require('../model/cAttend.js');
@@ -151,6 +152,83 @@ const joinSubject = async(req, res)=>{
                 });
             });
 }
+const leaveSubject = async(req, res)=>{
+    const studentId = req.body.studentId;
+    const subjectId = req.body.subjectId; 
+    const isValidId = await helper.isValidObjectID(studentId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid student id"
+        });
+    }
+    const isValidId2 = await helper.isValidObjectID(subjectId);
+    if(!isValidId2){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const existUser = await User.findById(studentId);
+    if(!existUser){
+        return res.status(404).json({
+            message: "User is not found"
+        });
+    }
+    const existSubject = await Subject.findById(subjectId);
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const existUserSubject = await UserSubject.findOne({
+        userId: studentId,
+        subjectId: subjectId
+    })
+    if(!existUserSubject){
+        return res.status(404).json({
+            message: "User is not in this subject"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken != studentId&&userIdFromToken != existSubject.hostId.toString()){
+        return res.status(403).json({
+            message: "Unauthorized action, you are not the host teacher of the subject"
+        });
+    }
+
+    const classSessions = await getClassSessions(subjectId);
+    const cAttends = await getCAttends(classSessions);
+
+    await UserSubject.findOneAndDelete({
+        userId: studentId,
+        subjectId: subjectId
+    }).then(async ()=>{
+        await Discussion.deleteMany({
+            creator: studentId,
+        });
+        await Question.deleteMany({
+            studentId: studentId,
+        });
+        await Post.deleteMany({
+            creator: studentId,
+        });
+        await AttendRecord.deleteMany({
+            studentId: studentId,
+            cAttendId: {
+                $in: cAttends.map(cAttend=>cAttend._id)
+            }
+        });
+        return res.status(200).json({
+            message: "User is removed from subject successfully"
+        });
+    }).catch(
+        err=>{
+            return res.status(500).json({
+                message: "Internal server error: "+err
+            });
+        });
+}
+
+
 const updateSubject = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.params.id);
     if(!isValidId){
@@ -455,6 +533,18 @@ const findSubjectById = async(req, res)=>{
         classSessions: classSessions
     });
 }
+const getClassSessions = async(id)=>{
+    const classSession = await ClassSession.findById(id);
+    return classSession;
+}
+const getCAttends = async(classSessions)=>{
+    const cAttends = await CAttend.find({
+        classSessionId: {
+            $in: classSessions.map(classSession=>classSession._id)
+        }
+    });
+    return cAttends;
+}
 module.exports = {
     addSubject, 
     joinSubject, 
@@ -463,5 +553,6 @@ module.exports = {
     findByUserId,
     getAvgRating,
     getStudents,
-    findSubjectById
+    findSubjectById,
+    leaveSubject
 };
