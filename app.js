@@ -129,6 +129,18 @@ io.on('connection', (socket) => {
         const roomName = `${subjectID}`;  
         io.to(roomName).emit("receiveReaction", { messageID, reaction });
     });
+    socket.on('sendUpdateReaction', ({subjectID, messageID, reaction})=>{
+        const roomName = `${subjectID}`;  
+        io.to(roomName).emit("receiveUpdateReaction", { messageID, reaction });
+    })
+    socket.on('sendResolve', ({subjectID, messageID})=>{
+        const roomName = `${subjectID}`;
+        io.to(roomName).emit("receiveResolve", messageID);
+    })  
+    socket.on('sendDeleteMessage', ({subjectID, messageID})=>{
+        const roomName = `${subjectID}`;
+        io.to(roomName).emit("receiveDeleteMessage", messageID);
+    })
 
     socket.on("leaveSubjectChannel", ({ userID, subjectID, channelID }) => {
         const roomName = `${subjectID}_${channelID}`;
