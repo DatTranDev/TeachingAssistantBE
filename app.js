@@ -133,6 +133,10 @@ io.on('connection', (socket) => {
         const roomName = `${subjectID}`;  
         io.to(roomName).emit("receiveUpdateReaction", { messageID, reaction });
     })
+    socket.on('sendAttendance', ({subjectID, student})=>{
+        const roomName = `${subjectID}`;  
+        io.to(roomName).emit("receiveAttendance", student);
+    })
     socket.on('sendResolve', ({subjectID, messageID})=>{
         const roomName = `${subjectID}`;
         io.to(roomName).emit("receiveResolve", messageID);

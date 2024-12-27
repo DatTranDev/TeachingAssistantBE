@@ -187,6 +187,9 @@ const addForStudent = async (req, res) => {
             message: "Invalid status"
         });
     }
+    req.body.FCMToken = "N/A";
+    req.body.studentLatitude = 0;
+    req.body.studentLongitude = 0;
     const newAttendRecord = new AttendRecord(req.body);
     await newAttendRecord.save().then((attendRecord) => {
         return res.status(201).json({
