@@ -245,7 +245,19 @@ const getAttendStudent = async(req, res)=>{
         select: '-password'
     });
     const students = attendRecords.map((attendRecord)=>{
-        return attendRecord.studentId;
+        const student = {
+            _id: attendRecord.studentId._id,
+            id: attendRecord.studentId._id,
+            name: attendRecord.studentId.name,
+            email: attendRecord.studentId.email,
+            phone: attendRecord.studentId.phone,
+            avatar: attendRecord.studentId.avatar,
+            role: attendRecord.studentId.role,
+            userCode: attendRecord.studentId.userCode,
+            school: attendRecord.studentId.school,
+            status: attendRecord.status
+        }
+        return student;
     });
     return res.status(200).json({
         students: students

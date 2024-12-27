@@ -159,6 +159,17 @@ const addForStudent = async (req, res) => {
             message: "Unauthorized action, you are not the host teacher of the subject"
         });
     }
+    if(!req.body.status){
+        return res.status(400).json({
+            message: "Status is required"
+        });
+    }
+    const enumStatus = ["CM", "KP", "CP"];
+    if(!enumStatus.includes(req.body.status)){
+        return res.status(400).json({
+            message: "Invalid status"
+        });
+    }
     const attendRecord = await AttendRecord.findOne({
         cAttendId: req.body.cAttendId,
         studentId: req.body.studentId
@@ -176,31 +187,26 @@ const addForStudent = async (req, res) => {
                 });
             });
     }
-    if(!req.body.status){
-        return res.status(400).json({
-            message: "Status is required"
+    else{
+        const newAttendRecord = new AttendRecord({
+            cAttendId: req.body.cAttendId,
+            studentId: req.body.studentId,
+            status: req.body.status,
+            FCMToken: 'N/A',
+            studentLatitude: 0,
+            studentLongitude: 0
         });
-    }
-    const enumStatus = ["CM", "KP", "CP"];
-    if(!enumStatus.includes(req.body.status)){
-        return res.status(400).json({
-            message: "Invalid status"
-        });
-    }
-    req.body.FCMToken = "N/A";
-    req.body.studentLatitude = 0;
-    req.body.studentLongitude = 0;
-    const newAttendRecord = new AttendRecord(req.body);
-    await newAttendRecord.save().then((attendRecord) => {
-        return res.status(201).json({
-            attendRecord: attendRecord
-        });
-    }).catch(
-        err => {
-            return res.status(500).json({
-                message: "Internal server error: " + err
+        await newAttendRecord.save().then((attendRecord) => {
+            return res.status(201).json({
+                attendRecord: attendRecord
             });
-        });
+        }).catch(
+            err => {
+                return res.status(500).json({
+                    message: "Internal server error: " + err
+                });
+            });
+    }
 }
 const updateForStudent = async (req, res) => {
     const isValidId = await helper.isValidObjectID(req.params.id);
