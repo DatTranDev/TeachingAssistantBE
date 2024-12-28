@@ -197,7 +197,7 @@ const sendNotification = async(message, topic)=>{
                         : 'Điểm danh ngay!',
                 body:  message.type!='attendance'  
                         ? `${message.sender}: ${message.body}`
-                        : `Môn học: ${message.subject}\nPhòng: ${message.room}`
+                        : `Môn học: ${message.subject}`
             },
             data: {
                 sender: message.senderId,

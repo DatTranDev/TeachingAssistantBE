@@ -98,7 +98,6 @@ const findBySubjectId = async(req, res)=>{
             const timeExpired = cAttend.timeExpired;
             const updateTime = cAttend.updatedAt.getTime()*60000;
             if (now > timeExpired + updateTime) {
-                cAttend.isActive = false;
                 cAttend.timeExpired = 0;
                 await cAttend.save();
             }
