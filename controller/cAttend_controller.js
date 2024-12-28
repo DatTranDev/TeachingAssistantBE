@@ -228,10 +228,10 @@ const deleteCAttend = async(req, res)=>{
                 $in: classSessionIds
             }
         });
-        await Promise.all(cAttends.map(async (cAttend) => {
-            if (cAttend.sessionNumber > cAttend.sessionNumber) {
-                cAttend.sessionNumber -= 1;
-                await cAttend.save();
+        await Promise.all(cAttends.map(async (c) => {
+            if (c.sessionNumber > cAttend.sessionNumber) {
+                c.sessionNumber -= 1;
+                await c.save();
             }
         }));
 
