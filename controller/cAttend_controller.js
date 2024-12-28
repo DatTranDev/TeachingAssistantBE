@@ -99,6 +99,7 @@ const findBySubjectId = async(req, res)=>{
             const updateTime = cAttend.updatedAt.getTime()*60000;
             if (now > timeExpired + updateTime) {
                 cAttend.isActive = false;
+                cAttend.timeExpired = 0;
                 await cAttend.save();
             }
         }
@@ -162,6 +163,11 @@ const deleteCAttend = async(req, res)=>{
     }
     const cAttend = await CAttend.findOne({
         _id: cAttendId
+    }).populate({
+        path: 'classSessionId',
+        populate: {
+            path: 'subjectId'
+        }
     });
     if(!cAttend){
         return res.status(404).json({
@@ -172,7 +178,7 @@ const deleteCAttend = async(req, res)=>{
     const userSubject = await UserSubject
     .findOne({
         userId: userIdFromToken,
-        subjectId: cAttend.subjectId,
+        subjectId: cAttend.classSessionId.subjectId,
         role: "teacher"
     });
     if(!userSubject){
