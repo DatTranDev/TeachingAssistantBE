@@ -135,7 +135,11 @@ io.on('connection', (socket) => {
     })
     socket.on('sendAttendance', ({subjectID, student})=>{
         const roomName = `${subjectID}`;  
-        io.to(roomName).emit("receiveAttendance", student);
+        io.to(roomName).emit("receiveUserAttendance", student);
+    })
+    socket.on('sendUpdateAttendance', ({subjectID, student})=>{
+        const roomName = `${subjectID}`;  
+        io.to(roomName).emit("receiveUpdateAttendance", student);
     })
     socket.on('sendResolve', ({subjectID, messageID})=>{
         const roomName = `${subjectID}`;
@@ -156,7 +160,7 @@ io.on('connection', (socket) => {
         socket.leave(subjectID);
         console.log(`${userID} left room: ${subjectID}`);
     });
-
+    
     socket.on("attendace", async ({subjectID, dataMsg})=>{
         io.to(subjectID).emit("receiveAttendance", dataMsg)
         try{
