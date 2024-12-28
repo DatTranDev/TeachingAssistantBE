@@ -92,16 +92,18 @@ const findBySubjectId = async(req, res)=>{
             $in: classSessionIds
         }
     });
-    const checkedExpiredCAttends = cAttends.map(async (cAttend)=>{
-        const currentTime = new Date().getTime();
-        const timeExpired = cAttend.timeExpired * 60000;
-        if(cAttend.updatedAt.getTime() + timeExpired < currentTime){
-            cAttend.isActive = false;
-            cAttend.timeExpired = 0;
-            cAttend.save();
+    const checkedExpiredCAttends = await Promise.all(cAttends.map(async (cAttend) => {
+        if (cAttend.isActive) {
+            const now = new Date().getTime();
+            const timeExpired = cAttend.timeExpired;
+            const updateTime = cAttend.updatedAt.getTime();
+            if (now > timeExpired + updateTime) {
+                cAttend.isActive = false;
+                await cAttend.save();
+            }
         }
         return cAttend;
-    })
+    }));
     return res.status(200).json({
         cAttends: checkedExpiredCAttends
     });
