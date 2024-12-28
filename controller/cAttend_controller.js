@@ -220,8 +220,13 @@ const deleteCAttend = async(req, res)=>{
             await subject.save();
         }
         //Decrease the session number of other cAttends
-        const cAttends = await CAttend.find({
-            classSessionId: cAttend.classSessionId
+        const classSessionIds = await ClassSession.find({
+            subjectId: userSubject.subjectId
+        }).select('_id');
+        const cAttends = await CAttend.find({ 
+            classSessionId: {
+                $in: classSessionIds
+            }
         });
         await Promise.all(cAttends.map(async (cAttend) => {
             if (cAttend.sessionNumber > cAttend.sessionNumber) {
@@ -229,7 +234,6 @@ const deleteCAttend = async(req, res)=>{
                 await cAttend.save();
             }
         }));
-
 
         return res.status(200).json({
             message: "CAttend deleted successfully"
