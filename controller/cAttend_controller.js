@@ -95,8 +95,8 @@ const findBySubjectId = async(req, res)=>{
     const checkedExpiredCAttends = await Promise.all(cAttends.map(async (cAttend) => {
         if (cAttend.isActive) {
             const now = new Date().getTime();
-            const timeExpired = cAttend.timeExpired;
-            const updateTime = cAttend.updatedAt.getTime()*60000;
+            const timeExpired = cAttend.timeExpired*60000;
+            const updateTime = cAttend.updatedAt.getTime();
             if (now > timeExpired + updateTime) {
                 cAttend.timeExpired = 0;
                 await cAttend.save();

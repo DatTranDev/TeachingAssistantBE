@@ -34,7 +34,7 @@ const reviewSchema = new Schema({
     },
     thinking: {
         type: String,
-        required: true,
+        default: ""
     }
 }, {
     timestamps: true
