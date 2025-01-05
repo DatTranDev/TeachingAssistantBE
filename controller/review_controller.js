@@ -58,9 +58,10 @@ const addReview = async (req, res) => {
             message: "Review already exists"
         });
     }
-    if(!req.body.thinking)
-        req.body.thinking = "";
-    const newReview = new Review(req.body);
+    const newReview = new Review({
+        ...req.body,
+        thinking: req.body.thinking ? req.body.thinking : "",
+    });
     await newReview.save().then((review) => {
         return res.status(201).json({
             review: review
