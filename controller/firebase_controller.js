@@ -3,6 +3,7 @@ const { getMessaging} = require("firebase-admin/messaging")
 const { getStorage, getDownloadURL} = require("firebase-admin/storage");
 const Document = require("../model/document.js");
 const CAttend = require("../model/cAttend.js");
+const FCMToken = require("../model/FCMToken.js");
 const path = require("path")
 require("dotenv").config({path: path.join(__dirname, "../.env")});
 const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS)
@@ -138,12 +139,14 @@ const uploadFile = async (req, res) => {
 }
 const subscribeToTopic = async (req, res) => {
     const {token, topics} = req.body;
+    const userId = req.user.userId;
     if(!token || !topics) 
         return res.status(400).send('Missing token or topic')
     try{
         await Promise.all(topics.map(async topic=>{
             await messaging.subscribeToTopic(token, topic)
         }))
+        await FCMToken.findOneAndUpdate({user: userId}, {FCMToken: token})
     }catch(err){
         return res.status(500).json({
           message: 'Failed to subscribe to topic '+err  
@@ -166,28 +169,42 @@ const unsubscribeFromTopics = async (req, res) => {
     }
     return res.status(200).send('Unsubscribed from topic')
 }
-const sendToSpecificDevice = async (req, res) => {
-    const {token, notification} = req.body;
-    if(!token || !notification) return res.status(400).send('Missing token or notification')
-    const message = {
-        data:{
-            "test": "test"
-        },
-        notification: {
-            title: notification.title,
-            body: notification.body
-        },
-        token: token
+const sendToSpecificDevice = async (message, recipients) => {
+    try {
+      // Lấy tất cả FCM Token của các user nhận
+      const tokens = await FCMToken.find(
+        { user: { $in: recipients } },
+        'FCMToken'
+      ).lean();
+  
+      const tokenList = tokens.map(t => t.token).filter(Boolean);
+  
+      if (tokenList.length === 0) return false;
+      for(let i=0; i<tokenList.length; i++){
+        const msg = {
+          notification: {
+            title: message.title,
+            body: message.body
+          },
+          data: {
+            sender: message.senderId?.toString() || '',
+            type: message.type || '',
+            subject: message.subject || '',
+            room: message.room || ''
+          },
+          token: tokenList[i]
+        };
+        await messaging.send(msg).catch(err=>{
+            return false;
+        });
+      }
+  
+      return true;
+    } catch (err) {
+      console.error('Error sending FCM:', err);
+      return false;
     }
-    try{
-        await messaging.send(message)
-    }catch(err){
-        return res.status(500).json({
-          message: 'Failed to send notification '+err  
-        })
-    }
-    return res.status(200).send('Notification sent')
-}
+  };
 const sendNotification = async(message, topic)=>{
     try{
         const msg = {

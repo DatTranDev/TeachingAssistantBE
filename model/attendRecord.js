@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { type } = require('os');
 const Schema = mongoose.Schema;
 
 const attendRecordSchema = new Schema({
@@ -12,6 +13,12 @@ const attendRecordSchema = new Schema({
         ref: 'User',
         required: true,
     },
+    listStatus: [
+        {
+            index: {type: Number, required: true},
+            status: {type: String, enum: ['CP', 'KP', 'CM'], required: true},            
+        }
+    ],
     status: {
         type: String,
         enum: ['CP', 'KP', 'CM'],  
@@ -34,7 +41,7 @@ const attendRecordSchema = new Schema({
 }, {
     timestamps: true
 });
-attendRecordSchema.index({ cAttendId: 1, studentId: 1 }, { unique: true });
+attendRecordSchema.index({ cAttendId: 1, studentId: 1,  }, { unique: true });
 attendRecordSchema.virtual("id").get(function(){
     return this._id.toHexString
 });

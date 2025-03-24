@@ -25,7 +25,7 @@ const cAttendSchema = new Schema({
         default: 0,
         required: true,
     },
-    isActive: {
+    isActive: { //active the attendance
         type: Boolean,
         required: true,
         default: false,
@@ -34,6 +34,16 @@ const cAttendSchema = new Schema({
         type: Number,
         required: true,
         default: 0,//minutes
+    },
+    numberOfAttend: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
+    isClosed: { //close the session
+        type: Boolean,
+        required: true,
+        default: false,
     }
 }, {
     timestamps: true

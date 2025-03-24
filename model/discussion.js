@@ -27,7 +27,13 @@ const discussionSchema = new Schema({
     },
     images: [
         {type: String}
-    ]
+    ],
+    replyOf: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Discussion',
+        default: null,
+        required: false,
+    }
 }, {
     timestamps: true
 });

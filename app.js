@@ -17,7 +17,8 @@ const uploadRoute = require('./route/upload_route.js');
 const firebaseRoute = require('./route/firebase_route.js');
 const documentRoute = require('./route/document_route.js');
 const discussionRoute = require('./route/discussion_route.js');
-
+const absenceRoute = require('./route/absence_route.js');
+const notificationRoute = require('./route/notification_route.js');
 const firebase_controller = require('./controller/firebase_controller.js');
 const http = require('http').createServer(app);
 
@@ -64,6 +65,8 @@ app.use(`${api}/upload`, uploadRoute);
 app.use(`${api}/firebase`, firebaseRoute);
 app.use(`${api}/document`, documentRoute);
 app.use(`${api}/discussion`, discussionRoute);
+app.use(`${api}/absence`, absenceRoute);
+app.use(`${api}/notification`, notificationRoute);
 //  Socket
 const { Server } = require('socket.io');
 const io = new Server(http, {
