@@ -28,10 +28,13 @@ const FcreateNotification = async (notification, recipient, topic) => {
 };
 const getNotification = async (req, res) => {
     const userId = req.user.userId;
+    const limit = req.query.limit ? req.query.limit : 10;
+    const page = req.query.page ? req.query.page : 1;
+    const skip = (page - 1) * limit;
     const notifications = await NotificationRecipient
       .find({receiverId: userId})
       .populate('notificationId')
-      .sort({createdAt: -1});
+      .sort({createdAt: -1}).skip(skip).limit(limit);
     return res.status(200).json({   
       notifications
     });
