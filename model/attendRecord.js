@@ -18,6 +18,11 @@ const attendRecordSchema = new Schema({
             status: {type: String, enum: ['CP', 'KP', 'CM'], required: true},            
         }
     ],
+    numberOfAbsence: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
     status: {
         type: String,
         enum: ['CP', 'KP', 'CM'],  

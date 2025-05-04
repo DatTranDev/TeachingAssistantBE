@@ -28,6 +28,11 @@ const subjectSchema = new Schema({
         required: true,
         default: 0
     },
+    maxAbsences: {
+        type: Number,
+        required: true,
+        default: 5
+    },
     joinCode: {
         type: String,
         required: true,

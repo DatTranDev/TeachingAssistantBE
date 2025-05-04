@@ -121,6 +121,7 @@ const getAbsenceRequestInfo = async (req, res) => {
 };
 const getTeacherAbsenceRequest = async (req, res) => {
     const userIdFromToken = req.user.userId;
+    const subjectId = req.query.subjectId;
     const absenceRequests = await AbsenceRequest.find({})
     .populate([
         { path: 'studentId', select: '-password'},
@@ -128,7 +129,8 @@ const getTeacherAbsenceRequest = async (req, res) => {
     ]);
 
     const filteredRequests = absenceRequests.filter(
-    req => req.subjectId?.hostId?.toString() === userIdFromToken.toString()
+    req => req.subjectId?.hostId?.toString() === userIdFromToken.toString() && 
+    subjectId ? req.subjectId._id.toString() === subjectId : true
     );
     return res.status(200).json({
         absenceRequests: filteredRequests
@@ -136,8 +138,11 @@ const getTeacherAbsenceRequest = async (req, res) => {
 }
 const getStudentAbsenceRequest = async (req, res) => {
     const userIdFromToken = req.user.userId;
+    const subjectId = req.query.subjectId;
     const absenceRequests = await AbsenceRequest.find({studentId: userIdFromToken})
-    .populate('subjectId');
+    .populate('subjectId').filter(
+        req => subjectId ? req.subjectId._id.toString() === subjectId : true
+    );
     return res.status(200).json({
         absenceRequests: absenceRequests
     });
@@ -149,14 +154,14 @@ const deleteRequest = async (req, res) => {
             message: "Invalid id"
         });
     }
-    const absenceRequest = await AbsenceRequest.findById(req.params.id);
+    const absenceRequest = await AbsenceRequest.findById(req.params.id).populate('subjectId');
     if (!absenceRequest) {
         return res.status(404).json({
             message: "Absence request is not found"
         });
     }
     const userIdFromToken = req.user.userId;
-    if(userIdFromToken != absenceRequest.studentId){
+    if(userIdFromToken != absenceRequest.studentId && userIdFromToken != absenceRequest.subjectId.hostId){
         return res.status(403).json({
             message: "Unauthorized action"
         });

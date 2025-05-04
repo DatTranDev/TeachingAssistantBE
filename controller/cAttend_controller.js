@@ -276,7 +276,8 @@ const getAttendStudent = async(req, res)=>{
             role: attendRecord.studentId.role,
             userCode: attendRecord.studentId.userCode,
             school: attendRecord.studentId.school,
-            status: attendRecord.status
+            status: attendRecord.status,
+            listStatus: attendRecord.listStatus,
         }
         return student;
     });
@@ -344,6 +345,94 @@ const resetAttendance = async(req, res)=>{
         message: "Attendance is reset and all related records are deleted"
     });
 }
+const resetSingleAttendance = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.params.cAttendId);
+    const index = parseInt(req.params.index);
+
+    if (!isValidId || isNaN(index)) {
+        return res.status(400).json({
+            message: "Invalid cAttendId or index"
+        });
+    }
+    const existCAttend = await CAttend.findOne({
+        _id: req.params.cAttendId
+    });
+    if (!existCAttend) {
+        return res.status(404).json({
+            message: "CAttend is not found"
+        });
+    }
+
+    try {
+        const records = await AttendRecord.find({ cAttendId: req.params.cAttendId });
+
+        await Promise.all(records.map(async (record) => {
+            const statusEntry = record.listStatus.find(item => item.index === index);
+            
+            const newListStatus = record.listStatus.filter(item => item.index !== index);
+            if(newListStatus.length != record.listStatus.length){
+                record.listStatus = newListStatus;
+                record.numberOfAbsence = newListStatus.filter(item => item.status === 'CM').length;
+                record.status = record.numberOfAbsence >= existCAttend.acceptedNumber ? 'CM' : 'KP';
+                await record.save();
+            }
+        }));
+
+        return res.status(200).json({
+            message: `Successfully removed attendance index ${index}`
+        });
+    } catch (error) {
+        console.error("Error in resetSingleAttendance:", error);
+        return res.status(500).json({
+            message: "Server error",
+            error: error.message
+        });
+    }
+};
+
+const updateAcceptedNumber = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.params.cAttendId);
+    if (!isValidId) {
+        return res.status(400).json({
+            message: "Invalid cAttend id"
+        });
+    }
+    const existCAttend = await CAttend.findOne({
+        _id: req.params.cAttendId
+    });
+    if (!existCAttend) {
+        return res.status(404).json({
+            message: "CAttend is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if (existCAttend.classSessionId.subjectId.hostId != userIdFromToken) {
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
+    existCAttend.acceptedNumber = req.body.acceptedNumber;
+    try{
+        await existCAttend.save();
+        const attendRecords = await AttendRecord.find({ cAttendId: req.params.cAttendId });
+        await Promise.all(attendRecords.map(async (record) => {
+            if(record.status != 'CP'){
+                record.numberOfAbsence = record.listStatus.filter(item => item.status === 'CM').length;
+                record.status = record.numberOfAbsence >= req.body.acceptedNumber ? 'CM' : 'KP';
+                await record.save();
+            }
+        }));
+
+        return res.status(200).json({
+            message: "Accepted number is updated"
+        });
+    }catch(err){
+        return res.status(500).json({
+            message: "Internal server error: " + err
+        });
+    }
+}
+
 module.exports = {
     addCAttend,
     findBySubjectId,
@@ -351,5 +440,7 @@ module.exports = {
     deleteCAttend,
     getAttendStudent,
     findById,
-    resetAttendance
+    resetAttendance,
+    resetSingleAttendance,
+    updateAcceptedNumber
 }
