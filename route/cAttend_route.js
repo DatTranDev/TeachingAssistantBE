@@ -15,4 +15,6 @@ route.patch('/attendRecord/update/forStudent/:id', auth.authenticateToken, atten
 route.patch('/attendRecord/markExcusedAttendance', auth.authenticateToken, attendRecordController.markExcusedAttendance);
 route.get('/attendStudents/:cAttendId', auth.authenticateToken, cAttendController.getAttendStudent);
 route.patch('/reset/:cAttendId', auth.authenticateToken, cAttendController.resetAttendance);
+route.patch('/resetSingle/:cAttendId/:index', auth.authenticateToken, cAttendController.resetSingleAttendance);
+route.patch('/updateAcceptedNumber/:cAttendId', auth.authenticateToken, cAttendController.updateAcceptedNumber);
 module.exports = route;

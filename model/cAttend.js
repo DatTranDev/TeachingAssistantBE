@@ -38,7 +38,12 @@ const cAttendSchema = new Schema({
     numberOfAttend: {
         type: Number,
         required: true,
-        default: 0,
+        default: 1,
+    },
+    acceptedNumber: {
+        type: Number,
+        required: true,
+        default: 1,
     },
     isClosed: { //close the session
         type: Boolean,

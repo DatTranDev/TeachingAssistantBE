@@ -42,6 +42,7 @@ const addAttendRecord = async (req, res) => {
         if (existingRecord) {
             existingRecord.status = newStatus;
             existingRecord.listStatus.push(statusEntry);
+            existingRecord.numberOfAbsence = isPresent ? existingRecord.numberOfAbsence : existingRecord.numberOfAbsence + 1;
             await existingRecord.save();
             return res.status(200).json({ attendRecord: existingRecord });
         }
@@ -51,13 +52,15 @@ const addAttendRecord = async (req, res) => {
         const tokenUsed = await AttendRecord.findOne({ cAttendId, FCMToken });
         if (tokenUsed) return res.status(400).json({ message: "This device already used for attendance" });
 
+        const numberOfAbsence = isPresent ? 1 : 0;
         const newAttendRecord = new AttendRecord({
             cAttendId,
             studentId,
             FCMToken,
             studentLatitude,
             studentLongitude,
-            status: newStatus,
+            status: numberOfAbsence >= existCAttend.acceptedNumber ? "CM" : "KP",
+            numberOfAbsence: numberOfAbsence,
             listStatus: [statusEntry]
         });
         await newAttendRecord.save();
@@ -113,11 +116,12 @@ const addForStudent = async (req, res) => {
         }
 
         let attendRecord = await AttendRecord.findOne({ cAttendId, studentId });
-        const statusEntry = { index: index, status };
+        const statusEntry = { index: index, status: status };
 
         if (attendRecord) {
-            attendRecord.status = status;
             attendRecord.listStatus.push(statusEntry);
+            attendRecord.numberOfAbsence = status === "CM" ? attendRecord.numberOfAbsence + 1 : attendRecord.numberOfAbsence;
+            attendRecord.status = attendRecord.numberOfAbsence >= existCAttend.acceptedNumber ? "CM" : "KP";
             await attendRecord.save();
             return res.status(200).json({ attendRecord });
         }
@@ -166,9 +170,10 @@ const updateForStudent = async (req, res) => {
             return res.status(400).json({ message: "Invalid status" });
         }
 
-        const statusEntry = { index: index, status };
+        const statusEntry = { index: index, status: status };
 
-        attendRecord.status = status;
+        attendRecord.numberOfAbsence = status === "CM" ? attendRecord.numberOfAbsence + 1 : attendRecord.numberOfAbsence;
+        attendRecord.status = attendRecord.numberOfAbsence >= attendRecord.cAttendId.acceptedNumber ? "CM" : "KP";
         attendRecord.listStatus.push(statusEntry);
         await attendRecord.save();
         return res.status(200).json({ attendRecord });
