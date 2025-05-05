@@ -119,9 +119,19 @@ const addForStudent = async (req, res) => {
         const statusEntry = { index: index, status: status };
 
         if (attendRecord) {
-            attendRecord.listStatus.push(statusEntry);
-            attendRecord.numberOfAbsence = status === "CM" ? attendRecord.numberOfAbsence + 1 : attendRecord.numberOfAbsence;
+            const existingIndex = attendRecord.listStatus.findIndex(entry => entry.index === index);
+
+            if (existingIndex === -1) {
+                attendRecord.listStatus.push(statusEntry);
+            } else {
+                attendRecord.listStatus[existingIndex].status = status;
+            }
+           
+            attendRecord.numberOfAbsence = attendRecord.listStatus.filter(entry => entry.status === "CM").length;
+
+            // Update overall status based on numberOfAbsence
             attendRecord.status = attendRecord.numberOfAbsence >= existCAttend.acceptedNumber ? "CM" : "KP";
+
             await attendRecord.save();
             return res.status(200).json({ attendRecord });
         }
@@ -131,6 +141,8 @@ const addForStudent = async (req, res) => {
             studentId,
             status,
             listStatus: [statusEntry],
+            numberOfAbsence: status === "CM" ? 1 : 0,
+            status: status === "CM" && 1 >= existCAttend.acceptedNumber ? "CM" : "KP",
             FCMToken: 'N/A',
             studentLatitude: 0,
             studentLongitude: 0
@@ -139,6 +151,7 @@ const addForStudent = async (req, res) => {
         return res.status(201).json({ attendRecord: newRecord });
 
     } catch (err) {
+        console.error("Error in addForStudent:", err);
         return res.status(500).json({ message: "Server error", error: err });
     }
 };
