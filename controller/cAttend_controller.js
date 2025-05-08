@@ -362,7 +362,11 @@ const resetSingleAttendance = async (req, res) => {
             message: "CAttend is not found"
         });
     }
-
+    if(existCAttend.acceptedNumber == existCAttend.numberOfAbsence){
+        existCAttend.acceptedNumber -= 1;
+        existCAttend.numberOfAbsence -= 1;
+        await existCAttend.save();
+    }
     try {
         const records = await AttendRecord.find({ cAttendId: req.params.cAttendId });
 
