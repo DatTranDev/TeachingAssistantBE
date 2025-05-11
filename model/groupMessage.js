@@ -13,7 +13,6 @@ const groupMessageSchema = new Schema({
     },
     content: {
         type: String,
-        required: true,
     },
     images: [
         {type: String}
