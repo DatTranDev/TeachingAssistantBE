@@ -6,8 +6,8 @@ const CAttend = require('../model/cAttend.js');
 const helper = require('../pkg/helper/helper.js');
 
 const createDiscussion = async (req, res) => {
-    const {cAttendId, creator, title, content, images} = req.body;
-    if (!cAttendId || !creator || !title || !content) {
+    const {cAttendId, creator, title, content, images, replyOf} = req.body;
+    if (!cAttendId || !creator || !content) {
         return res.status(400).json({ error: "Missing required fields" });
     }
     const existCAttend = await CAttend.findOne({ _id: cAttendId })
@@ -27,7 +27,8 @@ const createDiscussion = async (req, res) => {
             creator: creator,
             title: title,
             content: content,
-            images: images
+            images: images,
+            replyOf: replyOf
         });
         await discussion.save();
         return res.status(201).json({

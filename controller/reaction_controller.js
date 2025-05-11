@@ -28,7 +28,7 @@ const createReaction = async (req, res) => {
     if (!existUserSubject) {
         return res.status(400).json({ error: "User is not subscribed to the subject of the discussion" });
     }
-    const enums = [1, 2, 3]
+    const enums = [1, 2, 3, 4, 5]
     if(!enums.includes(type))
     {
         return res.status(400).json({ error: "Invalid type" });
@@ -50,7 +50,7 @@ const updateReaction = async (req, res) => {
     if (!type) {
         return res.status(400).json({ error: "Missing required fields" });
     }
-    const enums = [1, 2, 3]
+    const enums = [1, 2, 3, 4, 5]
     if(!enums.includes(type))
     {
         return res.status(400).json({ error: "Invalid type" });
