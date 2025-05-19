@@ -20,6 +20,7 @@ const discussionRoute = require('./route/discussion_route.js');
 const absenceRoute = require('./route/absence_route.js');
 const notificationRoute = require('./route/notification_route.js');
 const firebase_controller = require('./controller/firebase_controller.js');
+const groupRoute = require('./route/group_route.js');
 const http = require('http').createServer(app);
 
 require('dotenv').config();
@@ -67,6 +68,8 @@ app.use(`${api}/document`, documentRoute);
 app.use(`${api}/discussion`, discussionRoute);
 app.use(`${api}/absence`, absenceRoute);
 app.use(`${api}/notification`, notificationRoute);
+app.use(`${api}/group`, groupRoute);
+
 //  Socket
 const { Server } = require('socket.io');
 const io = new Server(http, {

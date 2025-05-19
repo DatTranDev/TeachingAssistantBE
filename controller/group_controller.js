@@ -1,6 +1,8 @@
 const Group = require('../model/group.js');
 const User = require('../model/user.js');
 const CAttend = require('../model/cAttend.js');
+const AttendRecord = require('../model/attendRecord.js');
+const UserSubject = require('../model/userSubject.js');
 const helper = require('../pkg/helper/helper.js');  
 const path = require('path');
 const { populate } = require('../model/discussion.js');
@@ -27,4 +29,7 @@ const createRandomGroup = async (req, res) => {
     if (existGroup.length > 0) {
         return res.status(400).json({ error: "Group already exists" });
     }
+}
+module.exports = { 
+    createRandomGroup
 }

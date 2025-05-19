@@ -43,8 +43,8 @@ const createRequest = async (req, res) => {
     });
     await absenceRequest.save().then(async(absenceRequest) => {
         await NotificationController.FcreateNotification({
-            title: "Đơn xin nghỉ học mới",
-            content: "Sinh viên " + existStudent.username + ": " + req.body.reason,
+            title: "Đơn xin nghỉ học",
+            content: "Sinh viên " + existStudent.name + ": " + req.body.reason,
             type: "absence_request",
             referenceModel: "AbsenceRequest",
             referenceId: absenceRequest._id
@@ -128,9 +128,9 @@ const getTeacherAbsenceRequest = async (req, res) => {
         { path: 'subjectId'}
     ]);
 
-    const filteredRequests = absenceRequests.filter(
-    req => req.subjectId?.hostId?.toString() === userIdFromToken.toString() && 
-    subjectId ? req.subjectId._id.toString() === subjectId : true
+    const filteredRequests = absenceRequests?.filter(
+        req => req.subjectId?.hostId?.toString() === userIdFromToken.toString() && 
+        subjectId ? req.subjectId._id.toString() === subjectId : true
     );
     return res.status(200).json({
         absenceRequests: filteredRequests

@@ -43,7 +43,7 @@ const register = async(req, res)=>{
 const login = async(req, res)=>{
     const existUser = await User.findOne({
         email: req.body.email
-    })
+    }).select('+password');
     if(!existUser) return res.status(404).json({
         message: "User is not found"
     })

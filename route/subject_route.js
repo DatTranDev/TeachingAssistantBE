@@ -20,4 +20,6 @@ route.get('/:subjectId/user/:userId/attendRecords', attendRecordController.findB
 route.get('/:subjectId/user/:userId/reviews', reviewController.findBySubjectAndUser);
 route.get('/:subjectId/students', subjectController.getStudents);
 route.get('/:subjectId/students/exportExcel', fileGenerateController.getStudentList);
+
+route.post('/notify/classCancel',auth.authenticateToken, subjectController.notifyClassCancellation);
 module.exports = route;

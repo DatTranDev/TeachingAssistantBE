@@ -9,6 +9,7 @@ const CAttend = require('../model/cAttend.js');
 const ClassSession = require('../model/classSession.js');
 const AttendRecord = require('../model/attendRecord.js');
 const Review = require('../model/review.js');
+const NotificationController = require('./notification_controller.js');
 const tokenController = require('./token_controller.js');
 const helper = require('../pkg/helper/helper.js');
 
@@ -554,6 +555,49 @@ const getCAttends = async(classSessions)=>{
     });
     return cAttends;
 }
+const notifyClassCancellation = async (req, res) => {
+    const { subjectId, date, reason} = req.body;
+    const isValidId = await helper.isValidObjectID(subjectId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const existSubject = await Subject.findById(subjectId);
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken != existSubject.hostId.toString()){
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
+    const notification = {
+        senderId: userIdFromToken,
+        title: `Nghỉ môn ${existSubject.code}(${existSubject.name})`,
+        content: `Thông báo nghỉ học môn ${existSubject.code}(${existSubject.name}) vào ngày ${date}. ${reason}`,
+        type: "class_cancellation",
+        referenceModel: "Subject",
+        referenceId: subjectId
+    }
+    const userSubjects = await UserSubject.find({
+        subjectId: subjectId,
+        role: "student"
+    });
+    const recipientIds = userSubjects.map(userSubject=>userSubject.userId);
+    await NotificationController.FcreateNotification(notification, recipientIds, subjectId);
+    if(!notification){
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+    return res.status(200).json({
+        message: "Notification sent successfully"
+    });
+}
 module.exports = {
     addSubject, 
     joinSubject, 
@@ -563,5 +607,6 @@ module.exports = {
     getAvgRating,
     getStudents,
     findSubjectById,
-    leaveSubject
+    leaveSubject,
+    notifyClassCancellation
 };
