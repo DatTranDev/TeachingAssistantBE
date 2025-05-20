@@ -8,5 +8,6 @@ route.patch("/read/:id", auth.authenticateToken, notificationController.readNoti
 route.patch("/readAll", auth.authenticateToken, notificationController.readAllNotification);
 route.delete("/delete/:id", auth.authenticateToken, notificationController.deleteNotification);
 
+route.get("/classReschedule/:id", auth.authenticateToken, notificationController.getClassRescheduleNoti);
 route.get("/classCancel/:id", auth.authenticateToken, notificationController.getClassCancelNoti);
 module.exports = route;

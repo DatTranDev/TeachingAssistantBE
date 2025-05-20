@@ -17,7 +17,7 @@ const notificationSchema = new Schema({
   },
   type: {
     type: String,
-    enum: ['absent_warning', 'absence_request', 'class_cancellation', 'reschedule','other'],
+    enum: ['absent_warning', 'absence_request', 'class_cancellation', 'class_reschedule','other'],
     required: true,
   },
   referenceModel: { 

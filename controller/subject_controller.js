@@ -577,9 +577,53 @@ const notifyClassCancellation = async (req, res) => {
     }
     const notification = {
         senderId: userIdFromToken,
-        title: `Nghỉ môn ${existSubject.code}(${existSubject.name})`,
-        content: `Thông báo nghỉ học môn ${existSubject.code}(${existSubject.name}) vào ngày ${date}. ${reason}`,
+        title: `Nghỉ môn ${existSubject.code} (${existSubject.name})`,
+        content: `Thông báo nghỉ học môn ${existSubject.code} (${existSubject.name}) vào ngày ${date}. ${reason}`,
         type: "class_cancellation",
+        referenceModel: "Subject",
+        referenceId: subjectId
+    }
+    const userSubjects = await UserSubject.find({
+        subjectId: subjectId,
+        role: "student"
+    });
+    const recipientIds = userSubjects.map(userSubject=>userSubject.userId);
+    await NotificationController.FcreateNotification(notification, recipientIds, subjectId);
+    if(!notification){
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+    return res.status(200).json({
+        message: "Notification sent successfully"
+    });
+}
+
+const notifyClassReschedule = async (req, res) => {
+    const { subjectId, date} = req.body;
+    const isValidId = await helper.isValidObjectID(subjectId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const existSubject = await Subject.findById(subjectId);
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const userIdFromToken = req.user.userId;
+    if(userIdFromToken != existSubject.hostId.toString()){
+        return res.status(403).json({
+            message: "Unauthorized action"
+        });
+    }
+    const notification = {
+        senderId: userIdFromToken,
+        title: `Học bù môn ${existSubject.code} (${existSubject.name})`,
+        content: `Thông báo lịch học môn ${existSubject.code} (${existSubject.name}) vào ngày ${date}.`,
+        type: "class_reschedule",
         referenceModel: "Subject",
         referenceId: subjectId
     }
@@ -608,5 +652,6 @@ module.exports = {
     getStudents,
     findSubjectById,
     leaveSubject,
-    notifyClassCancellation
+    notifyClassCancellation,
+    notifyClassReschedule
 };

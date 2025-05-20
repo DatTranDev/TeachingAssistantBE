@@ -12,8 +12,7 @@ const groupSchema = new Schema({
     }],
     admin: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
+        ref: 'User'
     },
     type: {
         type: String,

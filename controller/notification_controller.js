@@ -54,6 +54,22 @@ const getClassCancelNoti = async (req, res) => {
     notifications
   });
 }
+const getClassRescheduleNoti = async (req, res) => {
+  const userId = req.user.userId;
+  const subjectId = req.params.id;
+  const limit = req.query.limit ? req.query.limit : 10;
+  const page = req.query.page ? req.query.page : 1;
+  const skip = (page - 1) * limit;
+  const notifications = await Notification.find({
+    type: 'class_reschedule',
+    referenceModel: 'Subject',
+    referenceId: subjectId
+  }).limit(limit).skip(skip);
+  return res.status(200).json({
+    notifications
+  });
+}
+
 const readNotification = async (req, res) => {
     const userId = req.user.userId;
     const notificationId = req.params.id;
@@ -83,5 +99,6 @@ module.exports = {
     readNotification,
     readAllNotification,
     deleteNotification,
-    getClassCancelNoti
+    getClassCancelNoti,
+    getClassRescheduleNoti
 };

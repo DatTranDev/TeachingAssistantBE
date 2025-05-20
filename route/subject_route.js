@@ -22,4 +22,5 @@ route.get('/:subjectId/students', subjectController.getStudents);
 route.get('/:subjectId/students/exportExcel', fileGenerateController.getStudentList);
 
 route.post('/notify/classCancel',auth.authenticateToken, subjectController.notifyClassCancellation);
+route.post('/notify/classReschedule',auth.authenticateToken, subjectController.notifyClassReschedule);
 module.exports = route;
