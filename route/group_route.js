@@ -3,8 +3,8 @@ const route = express.Router();
 const groupController = require('../controller/group_controller.js');
 const groupMessageController = require('../controller/groupMessage_controller.js');
 
-route.post('/createRandomGroup', groupController.createRandomGroup);
-route.get('/getGroupByCAttendId/:cAttendId', groupController.getGroupByCAttendId);
+route.post('/random/create', groupController.createRandomGroup);
+route.get('/cAttend/:cAttendId', groupController.getGroupByCAttendId);
 
 route.post('/message/create', groupMessageController.createGroupMessage);
 route.get('/:groupId/message/', groupMessageController.getByGroupId);
