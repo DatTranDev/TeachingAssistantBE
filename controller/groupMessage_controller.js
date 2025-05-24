@@ -26,7 +26,7 @@ const createGroupMessage = async (req, res) => {
             content: content,
             images: images
         });
-        await groupMessage.save();
+        await groupMessage.save();``
         return res.status(201).json({
             groupMessage: groupMessage
         });

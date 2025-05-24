@@ -25,6 +25,16 @@ const groupSchema = new Schema({
         ref: 'CAttend',
         required: true,
     },
+    subjectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subject',
+        required: true,
+    },
+    autoAccept: {
+        type: Boolean,
+        required: true,
+        default: true,
+    }
 }, {
     timestamps: true
 });
