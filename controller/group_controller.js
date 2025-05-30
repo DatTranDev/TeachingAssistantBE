@@ -4,7 +4,7 @@ const CAttend = require('../model/cAttend.js');
 const AttendRecord = require('../model/attendRecord.js');
 const UserSubject = require('../model/userSubject.js');
 const helper = require('../utils/helper.js');  
-const path = require('path');
+const {RANDOM, DEFAULT} = require('../constants/groupType.js');
 
 const createRandomGroup = async (req, res) => {
     const { cAttendId, numberOfGroup } = req.body;
@@ -83,22 +83,30 @@ const getGroupByCAttendId = async (req, res) => {
 const createGroup = async (req, res) => {
     const { name, members, admin, type, cAttendId, subjectId, autoAccept } = req.body;
 
-    if (!name || !members || !cAttendId || !subjectId) {
+    if (!name || !members || !subjectId ) {
         return res.status(400).json({ error: "Missing required fields" });
+    }
+    if(!cAttendId && type == RANDOM){
+        return res.status(400).json({ error: "cAttendId is required for random groups" });
     }
 
     const userId = req.user.userId;
 
-    const existCAttend = await CAttend.findOne({ _id: cAttendId });
-    if (!existCAttend) {
-        return res.status(404).json({ error: "CAttend not found" });
+    if( type == RANDOM){
+        const existCAttend = await CAttend.findOne({ _id: cAttendId });
+        if (!existCAttend) {
+            return res.status(404).json({ error: "CAttend not found" });
+        }
+    }
+    else if (type == DEFAULT) {
+        cAttendId = subjectId;
     }
 
     const group = new Group({
         name: name,
         members: members,
         admin: admin || userId,
-        type: type || 'default',
+        type: type || RANDOM,
         cAttendId: cAttendId,
         subjectId: subjectId,
         autoAccept: autoAccept || true
