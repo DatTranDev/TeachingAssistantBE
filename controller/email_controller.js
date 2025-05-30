@@ -1,7 +1,7 @@
-const Service = require("../pkg/helper/emailService.js")
+const Service = require("../services/email.service.js");
 const RedisService = require('../services/redis.service.js');
 const User = require("../model/user.js")
-const Helper = require("../pkg/helper/helper.js")
+const Helper = require("../utils/helper.js")
 const sendEmail =async (req,res)=>{
     try {
     const email = req.body.email;
@@ -23,7 +23,7 @@ const sendEmail =async (req,res)=>{
     }
 
     const code = Helper.randomCode();
-    await Service.sendEmailService(email, code);
+    await Service.send(email, code);
 
     await RedisService.set(redisKey, code, 120); 
 
@@ -77,7 +77,7 @@ const verifyEmail = async (req,res)=>{
     return res.status(429).json({ message: "Code already sent. Please wait." });
   }
   const code = Helper.randomCode();
-  await Service.sendEmailService(email, code);
+  await Service.send(email, code);
   await RedisService.set(redisKey, code, 120); 
   res.status(200).json({ message: "Send email successful" });
 }

@@ -8,8 +8,6 @@ const firebase_controller = require('./firebase_controller.js');
 const fs = require('fs');
 const path = require('path');
 
-const helper = require('../pkg/helper/helper.js');
-
 var xl = require('excel4node');
 const { count } = require('console');
 

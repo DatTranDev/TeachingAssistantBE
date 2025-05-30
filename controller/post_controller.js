@@ -2,7 +2,7 @@ const Post = require('../model/post.js');
 const Channel = require('../model/channel.js');
 const User = require('../model/user.js');
 const Reaction = require('../model/reaction.js');
-const helper = require('../pkg/helper/helper.js');
+const helper = require('../utils/helper.js');
 
 const addPost = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.body.channelId);

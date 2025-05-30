@@ -1,5 +1,4 @@
-// services/redisService.js
-const redisClient = require('../utils/redis_client.js');
+const redisClient = require('../config/redis.js');
 
 const RedisService = {
   set: async (key, value, ttlInSeconds = 300) => {

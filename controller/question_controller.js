@@ -1,8 +1,8 @@
 const Question = require('../model/question.js');
 const Subject = require('../model/subject.js');
 const User = require('../model/user.js');
-const helper = require('../pkg/helper/helper.js');
-const tokenController = require('./token_controller.js');
+const helper = require('../utils/helper.js');
+const TokenService = require('../services/token.service.js');
 const UserSubject = require('../model/userSubject.js');
 
 const addQuestion = async(req, res)=>{
@@ -36,7 +36,7 @@ const addQuestion = async(req, res)=>{
     }
     const userIdFromToken = req.user.userId;
     if(userIdFromToken != req.body.studentId){
-        await tokenController.deleteTokenByUserID(userIdFromToken);
+        await TokenService.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });
@@ -129,7 +129,7 @@ const deleteQuestion = async(req, res)=>{
         });
     }
     if(userSubject.role == "student" && userIdFromToken != existQuestion.studentId){
-        await tokenController.deleteTokenByUserID(userIdFromToken);
+        await TokenService.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });

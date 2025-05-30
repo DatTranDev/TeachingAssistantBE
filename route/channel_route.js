@@ -1,9 +1,7 @@
 const express = require('express');
 const route= express.Router();
 const channelController = require('../controller/channel_controller.js');
-const auth = require('../pkg/auth/authentication.js');
 const postController = require('../controller/post_controller.js');
-const reactionController = require('../controller/reaction_controller.js');
 
 route.post('/add', channelController.addChannel);
 route.post('/addMany', channelController.addManyChannels);

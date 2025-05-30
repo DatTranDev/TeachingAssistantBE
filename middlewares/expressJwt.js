@@ -1,5 +1,5 @@
 const { expressjwt } = require("express-jwt");
-const tokenController = require("../../controller/token_controller.js")
+const TokenService = require("../services/token.service.js");
 const authJWT = ()=>{
     const secret = process.env.SECRET_KEY
     const api = process.env.API_URL
@@ -24,7 +24,7 @@ const authJWT = ()=>{
 
 const isRevoked = async (req,token)=>{
     const tokenString = getTokenFromJWT(token)
-    const isRevokedToken = await tokenController.checkTokenIsRevoked(tokenString)
+    const isRevokedToken = await TokenService.checkTokenIsRevoked(tokenString)
     return isRevokedToken
 }
 

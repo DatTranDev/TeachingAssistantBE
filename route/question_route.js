@@ -1,11 +1,11 @@
 const express=require('express');
-const route=express.Router();
-const questionController=require('../controller/question_controller.js');
-const auth=require('../pkg/auth/authentication.js');
+const route = express.Router();
+const questionController = require('../controller/question_controller.js');
+const auth = require('../middlewares/auth.middleware.js');
 
-route.post('/add', auth.authenticateToken, questionController.addQuestion);
-route.patch('/update/:id', auth.authenticateToken, questionController.updateQuestion);
-route.delete('/delete/:id', auth.authenticateToken, questionController.deleteQuestion);
-route.get('/findBySubject/:subjectId',auth.authenticateToken, questionController.findBySubjectId);
+route.post('/add', auth, questionController.addQuestion);
+route.patch('/update/:id', auth, questionController.updateQuestion);
+route.delete('/delete/:id', auth, questionController.deleteQuestion);
+route.get('/findBySubject/:subjectId',auth, questionController.findBySubjectId);
 
 module.exports=route;

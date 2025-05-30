@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
-const authJwt = require('./pkg/middleware/expressJwt.js');
+const authJwt = require('./middlewares/expressJwt.js');
 const cors = require('cors');
 const morgan = require('morgan');
 const userRoute = require('./route/user_route.js');
@@ -21,6 +21,9 @@ const absenceRoute = require('./route/absence_route.js');
 const notificationRoute = require('./route/notification_route.js');
 const firebase_controller = require('./controller/firebase_controller.js');
 const groupRoute = require('./route/group_route.js');
+
+const ErrorHandler = require('./middlewares/error.middleware.js');
+
 const http = require('http').createServer(app);
 
 require('dotenv').config();
@@ -69,6 +72,8 @@ app.use(`${api}/discussion`, discussionRoute);
 app.use(`${api}/absence`, absenceRoute);
 app.use(`${api}/notification`, notificationRoute);
 app.use(`${api}/group`, groupRoute);
+
+app.use(ErrorHandler);  
 
 //  Socket
 const { Server } = require('socket.io');

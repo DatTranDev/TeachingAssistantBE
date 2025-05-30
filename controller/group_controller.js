@@ -3,7 +3,7 @@ const User = require('../model/user.js');
 const CAttend = require('../model/cAttend.js');
 const AttendRecord = require('../model/attendRecord.js');
 const UserSubject = require('../model/userSubject.js');
-const helper = require('../pkg/helper/helper.js');  
+const helper = require('../utils/helper.js');  
 const path = require('path');
 
 const createRandomGroup = async (req, res) => {

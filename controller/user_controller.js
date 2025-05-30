@@ -1,8 +1,8 @@
 const User = require('../model/user.js');
-const bcrypt = require("../pkg/auth/authorization.js");
-const auth = require('../pkg/auth/authentication.js');
-const helper = require('../pkg/helper/helper.js');
-const tokenController = require('./token_controller.js');
+const bcrypt = require('../utils/hash.js');
+const TokenHelper = require('../utils/token.js');
+const helper = require('../utils/helper.js');
+const TokenService = require('../services/token.service.js');
 const register = async(req, res)=>{
     const isValidEmail = await helper.isValidEmail(req.body.email);
     if(!isValidEmail){
@@ -31,9 +31,9 @@ const register = async(req, res)=>{
             });
         });
     const resUser = await User.findById(userId).select('-password');
-    const accessToken = await auth.generateToken(newUser, '1h', 'access');
-    const refreshToken = await auth.generateToken(newUser, '30d', 'refresh');
-    await tokenController.addNewToken(refreshToken, newUser._id);
+    const accessToken = await TokenHelper.generateToken(newUser, '1h', 'access');
+    const refreshToken = await TokenHelper.generateToken(newUser, '30d', 'refresh');
+    await TokenService.addNewToken(refreshToken, newUser._id);
     return res.status(201).json({
         user: resUser,
         accessToken: accessToken,
@@ -54,9 +54,9 @@ const login = async(req, res)=>{
     const user = await User.findOne({
         email: req.body.email
     }).select('-password')
-    const accessToken = await auth.generateToken(existUser,"1h", 'access')
-    const refreshToken = await auth.generateToken(existUser, "30d", 'refresh')
-    tokenController.addNewToken(refreshToken, user._id)
+    const accessToken = await TokenHelper.generateToken(existUser,"1h", 'access')
+    const refreshToken = await TokenHelper.generateToken(existUser, "30d", 'refresh')
+    TokenService.addNewToken(refreshToken, user._id)
     return res.json({
         accessToken: accessToken,
         refreshToken: refreshToken,
@@ -75,7 +75,7 @@ const updateUser = async(req, res)=>{
     const existUser = await User.findById(id);
     // Check if the user ID from the token matches the user ID of the account being modified
     if (existUser._id.toString() !== userIdFromToken) {
-        await tokenController.deleteTokenByUserID(userIdFromToken);
+        await TokenService.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({ message: "Unauthorized action" });
     }
     if(req.body.password != null) return res.status(400).json({

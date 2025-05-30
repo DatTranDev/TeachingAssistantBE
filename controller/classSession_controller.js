@@ -2,11 +2,11 @@ const ClassSession = require('../model/classSession.js');
 const User = require('../model/user.js');
 const Subject = require('../model/subject.js');
 const UserSubject = require('../model/userSubject.js');
-const tokenController = require('./token_controller.js');
+const TokenService = require('../services/token.service.js');
 const Review = require('../model/review.js');
 const AttendRecord = require('../model/attendRecord.js');
 const CAttend = require('../model/cAttend.js');
-const helper = require('../pkg/helper/helper.js');
+const helper = require('../utils/helper.js');
 
 const addClassSession = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.body.subjectId);
@@ -20,7 +20,7 @@ const addClassSession = async(req, res)=>{
     });
     const userIdFromToken = req.user.userId;
     if(userIdFromToken != existSubject.hostId){
-        await tokenController.deleteTokenByUserID(userIdFromToken);
+        await TokenService.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });
@@ -70,7 +70,7 @@ const findByUserId = async(req, res)=>{
     }
     const userIdFromToken = req.user.userId;
     if(userIdFromToken != req.params.userId){
-        await tokenController.deleteTokenByUserID(userIdFromToken);
+        await TokenService.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });
@@ -133,7 +133,7 @@ const updateClassSession = async(req, res)=>{
         _id: existClassSession.subjectId
     });
     if(userIdFromToken != subject.hostId.toString()){
-        await tokenController.deleteTokenByUserID(userIdFromToken);
+        await TokenService.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });
@@ -175,7 +175,7 @@ const deleteClassSession = async(req, res)=>{
     });
     const userIdFromToken = req.user.userId;
     if(userIdFromToken != subject.hostId.toString()){
-        await tokenController.deleteTokenByUserID(userIdFromToken);
+        await TokenService.deleteTokenByUserID(userIdFromToken);
         return res.status(403).json({
             message: "Unauthorized action"
         });

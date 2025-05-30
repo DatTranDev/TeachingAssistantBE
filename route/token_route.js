@@ -1,4 +1,4 @@
-const tokenController = require("../controller/token_controller.js")
+const TokenService = require("../services/token.service.js")
 const express = require("express")
 const route = express.Router()
 
@@ -6,7 +6,7 @@ route.get("/refresh-token", async (req,res)=>{
     const header = req.headers.authorization
     const split = header.split(" ")
     const token = split[1]
-    const newToken = await tokenController.getAccessToken(token)
+    const newToken = await TokenService.getAccessToken(token)
     return res.json({
         access_token: newToken
     })
@@ -20,7 +20,7 @@ route.delete("/deleteall/:key", async (req,res)=>{
             message: "Unauthorized"
         })
     }
-    await tokenController.deleteAllToken()
+    await TokenService.deleteAllToken()
     return res.json({
         message: "Deleted successfully"
     })

@@ -1,6 +1,6 @@
 const Document = require('../model/document.js');
 const CAttend = require('../model/cAttend.js');
-const helper = require('../pkg/helper/helper.js');
+const helper = require('../utils/helper.js');
 
 const findByCAttendId = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.params.cAttendId);

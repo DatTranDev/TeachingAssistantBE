@@ -3,7 +3,7 @@ const User = require('../model/user.js');
 const Subject = require('../model/subject.js');
 
 const NotificationController = require('./notification_controller.js');
-const helper = require('../pkg/helper/helper.js');
+const helper = require('../utils/helper.js');
 
 const createRequest = async (req, res) => {
     const isValidId = await helper.isValidObjectID(req.body.studentId);

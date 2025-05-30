@@ -3,7 +3,7 @@ const Reaction = require('../model/reaction.js');
 const User = require('../model/user.js');
 const UserSubject = require('../model/userSubject.js');
 const CAttend = require('../model/cAttend.js');
-const helper = require('../pkg/helper/helper.js');
+const helper = require('../utils/helper.js');
 
 const createDiscussion = async (req, res) => {
     const {cAttendId, creator, title, content, images, replyOf} = req.body;

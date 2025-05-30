@@ -1,7 +1,7 @@
 const Subject = require('../model/subject.js');
 const Channel = require('../model/channel.js');
 const Post = require('../model/post.js');
-const helper = require('../pkg/helper/helper.js');
+const helper = require('../utils/helper.js');
 
 const addChannel = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.body.subjectId);

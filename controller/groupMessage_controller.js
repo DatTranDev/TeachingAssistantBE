@@ -1,7 +1,7 @@
 const GroupMessage = require('../model/groupMessage.js');
 const Group = require('../model/group.js');
 const User = require('../model/user.js');
-const helper = require('../pkg/helper/helper.js');
+const helper = require('../utils/helper.js');
 
 const createGroupMessage = async (req, res) => {
     const { groupId, senderId, content, images } = req.body;

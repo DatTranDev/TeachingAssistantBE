@@ -3,7 +3,7 @@ const AbsenceRequest = require('../model/absenceRequest.js');
 const User = require('../model/user.js');
 const CAttend = require('../model/cAttend.js');
 const Subject = require('../model/subject.js');
-const helper = require('../pkg/helper/helper.js');
+const helper = require('../utils/helper.js');
 
 const addAttendRecord = async (req, res) => {
     try {
