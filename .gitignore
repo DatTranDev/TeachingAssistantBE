@@ -129,3 +129,4 @@ dist
 .pnp.*
                                                                                                                                 #firebase private file
 service-account.json
+pkgs/

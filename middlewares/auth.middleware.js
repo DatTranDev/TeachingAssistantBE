@@ -5,6 +5,7 @@ const secret = process.env.SECRET_KEY
 
 const auth = (req, res, next) => {
     try {
+        const token = req.header('Authorization').replace('Bearer ', ''); 
         const decoded = jwt.verify(token, secret);
         req.user = decoded;
         next();

@@ -146,7 +146,12 @@ const subscribeToTopic = async (req, res) => {
         await Promise.all(topics.map(async topic=>{
             await messaging.subscribeToTopic(token, topic)
         }))
-        await FCMToken.findOneAndUpdate({user: userId}, {FCMToken: token})
+        await FCMToken.findOneAndUpdate(
+            { user: userId },
+            { FCMToken: token },
+            { upsert: true, new: true }
+        );
+
     }catch(err){
         return res.status(500).json({
           message: 'Failed to subscribe to topic '+err  

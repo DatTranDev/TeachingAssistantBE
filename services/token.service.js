@@ -5,21 +5,18 @@ const UserService = require('./user.service.js');
 
 const TokenService = {
     addFCM: async (userId, token) => {
-        const existingToken = await FCMToken.findOne({ user: userId });
-        if (existingToken) {
-            existingToken.FCMToken = token;
-            await existingToken.save().catch(err => {
-                throw new Error(`Error updating FCM token: ${err.message}`);
-            });
-            return existingToken;
-        } else {
-            const newToken = new FCMToken({ user: userId, FCMToken: token });
-            await newToken.save().catch(err => {
-                throw new Error(`Error saving FCM token: ${err.message}`);
-            });
-            return newToken;
-        }
-    },
+    try {
+        const updatedToken = await FCMToken.findOneAndUpdate(
+            { user: userId },
+            { FCMToken: token },
+            { new: true, upsert: true }
+        );
+        return updatedToken;
+    } catch (err) {
+        throw new Error(`Error saving FCM token: ${err.message}`);
+    }
+}
+,
     getFCM: async (userId) => {
         const token = await FCMToken.findOne({ user: userId });
         if (!token) throw new Error('FCM token not found for this user');
