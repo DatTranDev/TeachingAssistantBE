@@ -1,7 +1,7 @@
 const { bucket, messaging } = require('../config/firebase');
 const { getDownloadURL} = require("firebase-admin/storage");
 const TokenService = require('./token.service.js');
-const AppError = require("../utils/AppError.js");
+const {AppError} = require("../utils/AppError.js");
 const DocumentService = require('./document.service.js');
 
 const FirebaseService = {

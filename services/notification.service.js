@@ -1,7 +1,7 @@
 const Notification = require('../model/notification.js');
 const NotificationRecipient = require('../model/notificationRecipient.js');
 const FirebaseService = require('./firebase.service.js');
-const AppError = require('../utils/AppError.js');
+const {AppError} = require('../utils/AppError.js');
 
 const NotificationService = {
     create: async (notification)=>{

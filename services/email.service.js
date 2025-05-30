@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer")
 require("dotenv").config()
+const { AppError } = require('../utils/AppError.js');
 
 const EmailService = {
     send: async (email, code) => {
@@ -39,7 +40,7 @@ const EmailService = {
         });
       } catch (error) {
         console.error("Error sending email:", error);
-        throw new Error("Failed to send verification email");
+        throw new AppError(`Failed to send email: ${error.message}`, 500);
       }
     }
 }
