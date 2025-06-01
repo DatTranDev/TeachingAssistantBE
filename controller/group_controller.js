@@ -3,6 +3,8 @@ const User = require('../model/user.js');
 const CAttend = require('../model/cAttend.js');
 const AttendRecord = require('../model/attendRecord.js');
 const UserSubject = require('../model/userSubject.js');
+const CAttendService = require('../services/cAttend.service.js');
+const GroupService = require('../services/group.service.js');
 const helper = require('../utils/helper.js');  
 const {RANDOM, DEFAULT} = require('../constants/groupType.js');
 
@@ -83,20 +85,19 @@ const getGroupByCAttendId = async (req, res) => {
 const createGroup = async (req, res) => {
     const { name, members, admin, type, cAttendId, subjectId, autoAccept } = req.body;
 
-    if (!name || !members || !subjectId ) {
+    if (!name || !members || !subjectId || !type) {
         return res.status(400).json({ error: "Missing required fields" });
     }
     if(!cAttendId && type == RANDOM){
         return res.status(400).json({ error: "cAttendId is required for random groups" });
     }
-
+    if (!helper.isValidObjectID(subjectId)) {
+        return res.status(400).json({ error: "Invalid subject id" });
+    }
     const userId = req.user.userId;
 
     if( type == RANDOM){
-        const existCAttend = await CAttend.findOne({ _id: cAttendId });
-        if (!existCAttend) {
-            return res.status(404).json({ error: "CAttend not found" });
-        }
+        await CAttendService.get(cAttendId);
     }
     else if (type == DEFAULT) {
         cAttendId = subjectId;
@@ -106,7 +107,7 @@ const createGroup = async (req, res) => {
         name: name,
         members: members,
         admin: admin || userId,
-        type: type || RANDOM,
+        type: type,
         cAttendId: cAttendId,
         subjectId: subjectId,
         autoAccept: autoAccept || true
@@ -178,12 +179,12 @@ const getRandomGroups = async (req, res) => {
     return res.status(200).json({ groups: groups });
 }
 const getDefaultGroups = async (req, res) => {
-    const cAttendId = req.params.cAttendId;
-    const isValidId = await helper.isValidObjectID(cAttendId);
+    const subjectId = req.params.subjectId;
+    const isValidId = await helper.isValidObjectID(subjectId);
     if (!isValidId) {
         return res.status(400).json({ error: "Invalid id" });
     }
-    const groups = await Group.find({ cAttendId: cAttendId, type: 'default' }).populate('members');
+    const groups = await Group.find({ subjectId: subjectId, type: 'default' }).populate('members');
     if (!groups) {
         return res.status(404).json({ error: "Default groups not found" });
     }
@@ -243,6 +244,20 @@ const leaveGroup = async (req, res) => {
     await group.save();
     return res.status(200).json({ message: "Left group successfully", group: group });
 }
+const notifyCrossGradingPairs = async (req, res) => {
+    const pairs = req.body.pairs;
+
+    if (!Array.isArray(pairs) || pairs.length === 0) {
+        return res.status(400).json({ error: "Pairs must be a non-empty array" });
+    }
+
+    try {
+        await GroupService.notifyCrossGradingPairs(pairs);
+        return res.status(200).json({ message: "Cross grading notifications sent" });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
 module.exports = { 
     createRandomGroup,
     getGroupByCAttendId,
@@ -253,5 +268,6 @@ module.exports = {
     getDefaultGroups,
     getUserRandomGroup,
     getUserDefaultGroup,
-    leaveGroup
+    leaveGroup,
+    notifyCrossGradingPairs
 }

@@ -17,4 +17,7 @@ route.get('/attendStudents/:cAttendId', auth, cAttendController.getAttendStudent
 route.patch('/reset/:cAttendId', auth, cAttendController.resetAttendance);
 route.patch('/resetSingle/:cAttendId/:index', auth, cAttendController.resetSingleAttendance);
 route.patch('/updateAcceptedNumber/:cAttendId', auth, cAttendController.updateAcceptedNumber);
+
+route.get('/topParticipants/:cAttendId', auth, cAttendController.getTopParticipants);
+route.get('/topReactors/:cAttendId', auth, cAttendController.getTopReactors);
 module.exports = route;

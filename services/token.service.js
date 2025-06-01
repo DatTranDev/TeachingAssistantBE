@@ -25,8 +25,8 @@ const TokenService = {
     getFCMs: async (userIds) => {
         const tokens = await FCMToken.find({ user: { $in: userIds } }).lean();
         const tokenList = tokens.map(t => t.FCMToken).filter(Boolean);
-        if (tokenList.length === 0) throw new Error('No FCM tokens found for the provided user IDs');
-        return tokens;
+        return tokenList;
+        
     },
     addNewToken: async (token, userID)=>{
         const tokenModel= new Token({

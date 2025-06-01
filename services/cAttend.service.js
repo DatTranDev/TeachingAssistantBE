@@ -1,8 +1,12 @@
 const CAttend = require('../model/cAttend.js');
 const {NotFoundError} = require('../utils/AppError.js');
+const helper = require('../utils/helper.js');
 
 const CAttendService = {
     get: async (id) => {
+        if(!helper.isValidObjectID(id)) {
+            throw new NotFoundError(`Invalid ID format: ${id}`);
+        }
         const cAttend = await CAttend.findById(id);
         if (!cAttend) throw new NotFoundError(`CAttend with ID ${id} not found`);
         return cAttend;

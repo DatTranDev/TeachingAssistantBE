@@ -1,6 +1,6 @@
 const Notification = require('../model/notification.js');
 const NotificationRecipient = require('../model/notificationRecipient.js');
-const firebaseController = require('./firebase_controller.js');
+const FirebaseService = require('../services/firebase.service.js');
 
 const FcreateNotification = async (notification, recipient, topic) => {
     try {
@@ -13,11 +13,11 @@ const FcreateNotification = async (notification, recipient, topic) => {
           body: notification.content,
         }
         if (topic) {
-          await firebaseController.sendNotification(noti, topic);
+          await FirebaseService.sendNotification(noti, topic);
           return notification;
         }
         if(recipient.length > 0){
-          await firebaseController.sendToSpecificDevice(noti, recipient);
+          await FirebaseService.sendToSpecificDevice(noti, recipient);
         }
         return notification
       });

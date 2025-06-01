@@ -7,6 +7,10 @@ const ClassSession = require('../model/classSession.js');
 const Review = require('../model/review.js');
 const AttendRecord = require('../model/attendRecord.js');
 const Document = require('../model/document.js');
+const ReactionService = require('../services/reaction.service.js');
+const CAttendService = require('../services/cAttend.service.js');
+const DiscussionService = require('../services/discussion.service.js');
+const {BadRequestError, NotFoundError, ForbiddenError, AppError} = require('../utils/AppError.js');
 
 const addCAttend = async(req, res)=>{
     const isValidId = await helper.isValidObjectID(req.body.classSessionId);
@@ -436,6 +440,33 @@ const updateAcceptedNumber = async (req, res) => {
     }
 }
 
+const getTopReactors = async (req, res) => {
+    const cAttendId = req.params.cAttendId;
+    const top = parseInt(req.query.top) || 5;
+    await CAttendService.get(cAttendId);
+    try {
+        const topReactors = await ReactionService.getTopReactorByCAttend(cAttendId, top);
+        return res.status(200).json({
+            topReactors: topReactors
+        });
+    } catch (error) {
+        throw new AppError("Error fetching top reactors: " + error.message, 500);
+    }
+} 
+const getTopParticipants = async (req, res) => {
+    const cAttendId = req.params.cAttendId;
+    const top = parseInt(req.query.top) || 5;
+    await CAttendService.get(cAttendId);
+    try {
+        const topParticipants = await DiscussionService.getTopParticipantByCAttend(cAttendId, top);
+        return res.status(200).json({
+            topParticipants: topParticipants
+        });
+    } catch (error) {
+        throw new AppError("Error fetching top participants: " + error.message, 500);
+    }
+}
+
 module.exports = {
     addCAttend,
     findBySubjectId,
@@ -445,5 +476,7 @@ module.exports = {
     findById,
     resetAttendance,
     resetSingleAttendance,
-    updateAcceptedNumber
+    updateAcceptedNumber,
+    getTopReactors,
+    getTopParticipants
 }

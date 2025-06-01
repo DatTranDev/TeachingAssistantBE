@@ -4,7 +4,7 @@ const UserSubject = require('../model/userSubject.js');
 const CAttend = require('../model/cAttend.js');
 const ClassSession = require('../model/classSession.js');
 const AttendRecord = require('../model/attendRecord.js');
-const firebase_controller = require('./firebase_controller.js');
+const FirebaseService = require('../services/firebase.service.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -98,7 +98,7 @@ const getStudentList = async (req, res) => {
             };
 
             // Pass the file object to the getURL function
-            const url = await firebase_controller.getURL(file);
+            const url = await FirebaseService.getURL(file);
 
             return res.status(200).json({
                 url: url

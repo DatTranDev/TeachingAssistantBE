@@ -22,7 +22,9 @@ const FirebaseService = {
           throw new AppError(err.message, 500);
         })
 
-        const downloadURL = await getDownloadURL(storageRef)
+        const downloadURL = await getDownloadURL(storageRef).catch(err=>{
+            throw new AppError(err.message, 500);
+        })
         return downloadURL;
     },
     uploadImages: async(files) => {
@@ -40,7 +42,9 @@ const FirebaseService = {
             }).catch(err=>{
               throw new AppError(err.message, 500);
             })
-            const downloadURL = await getDownloadURL(storageRef)
+            const downloadURL = await getDownloadURL(storageRef).catch(err=>{
+                throw new AppError(err.message, 500);
+            });
             images.push(downloadURL)
         }))
         return images;
