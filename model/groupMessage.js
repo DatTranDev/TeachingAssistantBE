@@ -17,6 +17,10 @@ const groupMessageSchema = new Schema({
     images: [
         {type: String}
     ],
+    isRevoked: {
+        type: Boolean,
+        default: false,
+    },
 }, {
     timestamps: true
 });
