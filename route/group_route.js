@@ -22,6 +22,7 @@ route.get('/:groupId/message/', groupMessageController.getByGroupId);
 route.patch('/message/update/:id', groupMessageController.updateGroupMessage);
 route.delete('/message/delete/:id', groupMessageController.deleteGroupMessage);
 
+route.post('/crossPairs', auth, groupController.notifyCrossGradingPairs);
 
 module.exports = route;
 
