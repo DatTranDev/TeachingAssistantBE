@@ -57,7 +57,7 @@ const createRandomGroup = async (req, res) => {
         const group = new Group({
             name: `Nhóm ${index + 1}`,
             members: groupMembers,
-            admin: userId, 
+            admin: groupMembers[0], 
             type: "random",
             autoAccept: false,
             subjectId: existCAttend.classSessionId.subjectId._id,
@@ -85,6 +85,17 @@ const getGroupByCAttendId = async (req, res) => {
 const createGroup = async (req, res) => {
     const { name, members, admin, type, cAttendId, subjectId, autoAccept } = req.body;
 
+    if(admin){
+        const isValidId = await helper.isValidObjectID(admin);
+        if (!isValidId) {
+            return res.status(400).json({ error: "Invalid admin id" });
+        }
+        const adminUser = await User.findById(admin);
+        if (!adminUser) {
+            return res.status(404).json({ error: "Admin user not found" });
+        }
+    }
+    const isValidMembers = members.every(member => helper.isValidObjectID(member));
     if (!name || !members || !subjectId || !type) {
         return res.status(400).json({ error: "Missing required fields" });
     }
@@ -99,18 +110,15 @@ const createGroup = async (req, res) => {
     if( type == RANDOM){
         await CAttendService.get(cAttendId);
     }
-    else if (type == DEFAULT) {
-        cAttendId = subjectId;
-    }
 
     const group = new Group({
         name: name,
         members: members,
-        admin: admin || userId,
+        admin:  (!admin || admin === "") ? userId : admin,
         type: type,
-        cAttendId: cAttendId,
+        cAttendId: type == RANDOM ? cAttendId : subjectId,
         subjectId: subjectId,
-        autoAccept: autoAccept || true
+        autoAccept:  autoAccept === false ? false : true
     });
 
     await group.save();

@@ -4,7 +4,7 @@ const groupController = require('../controller/group_controller.js');
 const groupMessageController = require('../controller/groupMessage_controller.js');
 const auth = require('../middlewares/auth.middleware.js');
 
-route.post('/random/create', groupController.createRandomGroup);
+route.post('/random/create',auth, groupController.createRandomGroup);
 route.get('/cAttend/:cAttendId', groupController.getGroupByCAttendId);
 route.post('/join/:groupId', auth, groupController.joinGroup);
 route.post('/create', auth, groupController.createGroup);

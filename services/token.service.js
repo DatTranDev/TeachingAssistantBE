@@ -1,6 +1,6 @@
 const FCMToken = require('../model/FCMToken.js');
 const Token = require('../model/token.js');
-const TokenHepler = require('../utils/token.js');
+const TokenHelper = require('../utils/token.js');
 const UserService = require('./user.service.js');
 
 const TokenService = {
@@ -41,7 +41,7 @@ const TokenService = {
         return null;
     },
     checkTokenIsRevoked: async (token) =>{
-        const jwt = await TokenHepler.verifyToken(token)
+        const jwt = await TokenHelper.verifyToken(token)
         const type = jwt.type
         if(type == 'access'){
             return false
@@ -64,7 +64,7 @@ const TokenService = {
         const jwt = await TokenHelper.verifyToken(refreshToken)
         const id= jwt.userId
         const user = await UserService.get(id);
-        const token =  await TokenHepler.generateToken(user, "1h", 'access')
+        const token =  await TokenHelper.generateToken(user, "1h", 'access')
         return token
     },
     deleteTokenByUserID: async (uid) =>{
