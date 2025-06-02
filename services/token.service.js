@@ -61,7 +61,7 @@ const TokenService = {
         return tokenFind
     },
     getAccessToken: async (refreshToken) =>{
-        const jwt = await Token.verifyToken(refreshToken)
+        const jwt = await TokenHelper.verifyToken(refreshToken)
         const id= jwt.userId
         const user = await UserService.get(id);
         const token =  await TokenHepler.generateToken(user, "1h", 'access')
