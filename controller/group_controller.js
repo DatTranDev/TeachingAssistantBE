@@ -67,8 +67,9 @@ const createRandomGroup = async (req, res) => {
     });
 
     const groupDocs = await Promise.all(groupPromises);
+    const groupPopulated = await Group.populate(groupDocs, { path: 'members' });
 
-    return res.status(201).json({ message: "Groups created successfully", groups: groupDocs });
+    return res.status(201).json({ message: "Groups created successfully", groups: groupPopulated });
 };
 const getGroupByCAttendId = async (req, res) => {
     const cAttendId = req.params.cAttendId;
@@ -122,8 +123,9 @@ const createGroup = async (req, res) => {
     });
 
     await group.save();
+    const populatedGroup = await Group.populate(group, { path: 'members' });
 
-    return res.status(201).json({ message: "Group created successfully", group: group });
+    return res.status(201).json({ message: "Group created successfully", group: populatedGroup });
 };
 const joinGroup = async (req, res) => {
     const groupId = req.params.groupId;
@@ -146,7 +148,8 @@ const joinGroup = async (req, res) => {
     if (group.autoAccept || group.admin.toString() === userId.toString()) {
         group.members.push(userId);
         await group.save();
-        return res.status(200).json({ message: "Joined group successfully", group: group });
+        const populatedGroup = await Group.populate(group, { path: 'members' });
+        return res.status(200).json({ message: "Joined group successfully", group: populatedGroup });
     } else {
         return res.status(403).json({ error: "You cannot join this group" });
     }
