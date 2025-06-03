@@ -19,8 +19,9 @@ const documentRoute = require('./route/document_route.js');
 const discussionRoute = require('./route/discussion_route.js');
 const absenceRoute = require('./route/absence_route.js');
 const notificationRoute = require('./route/notification_route.js');
-const firebase_controller = require('./controller/firebase_controller.js');
+const FirebaseService = require('./services/firebase.service.js');
 const groupRoute = require('./route/group_route.js');
+const systemRoute = require('./route/system_route.js');
 
 const ErrorHandler = require('./middlewares/error.middleware.js');
 
@@ -72,6 +73,7 @@ app.use(`${api}/discussion`, discussionRoute);
 app.use(`${api}/absence`, absenceRoute);
 app.use(`${api}/notification`, notificationRoute);
 app.use(`${api}/group`, groupRoute);
+app.use(`${api}/system`, systemRoute);
 
 app.use(ErrorHandler);  
 
@@ -118,7 +120,7 @@ io.on('connection', (socket) => {
     socket.on("sendMessageToSubject", async ({ subjectID, message, dataMsg }) => {
         io.to(subjectID).emit("receiveSubjectMessage", message);
         try{
-            await firebase_controller.sendNotification(dataMsg, subjectID)
+            await FirebaseService.sendNotification(dataMsg, subjectID)
         }catch(err){
             console.log(err)
         }
@@ -129,7 +131,7 @@ io.on('connection', (socket) => {
         const roomName = `${subjectID}_${channelID}`;  
         io.to(roomName).emit("receiveChannelMessage", message);
         try{
-            await firebase_controller.sendNotification(dataMsg, subjectID);
+            await FirebaseService.sendNotification(dataMsg, subjectID);
         }catch(err){
             console.log(err)
         }
@@ -175,7 +177,7 @@ io.on('connection', (socket) => {
     socket.on("attendace", async ({subjectID, dataMsg})=>{
         io.to(subjectID).emit("receiveAttendance", dataMsg)
         try{
-            await firebase_controller.sendNotification(dataMsg, subjectID)
+            await FirebaseService.sendNotification(dataMsg, subjectID)
         }catch(err){
             console.log(err)
         }

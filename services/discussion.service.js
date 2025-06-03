@@ -71,20 +71,77 @@ const DiscussionService = {
         ]);
 
         return result;
+    },
+    getTopParticipantBySubject: async (subjectId, top = 5) => {
+        const objectId = new mongoose.Types.ObjectId(subjectId);
+
+         const result = await Discussion.aggregate([
+        {
+            $lookup: {
+                from: 'cattends',
+                localField: 'cAttendId',
+                foreignField: '_id',
+                as: 'cAttend'
+            }
+        },
+        { $unwind: '$cAttend' },
+
+        // Join cattend.classSessionId → classsessions
+        {
+            $lookup: {
+                from: 'classsessions',
+                localField: 'cAttend.classSessionId',
+                foreignField: '_id',
+                as: 'classSession'
+            }
+        },
+        { $unwind: '$classSession' },
+
+        // Lọc theo subjectId
+        {
+            $match: {
+                'classSession.subjectId': objectId
+            }
+        },
+
+        // Gom nhóm theo creator
+        {
+            $group: {
+                _id: '$creator',
+                totalDiscussions: { $sum: 1 }
+            }
+        },
+        { $sort: { totalDiscussions: -1 } },
+        { $limit: top },
+
+        // Join với users
+        {
+            $lookup: {
+                from: 'users',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'user'
+            }
+        },
+        { $unwind: '$user' },
+
+        // Format kết quả
+        {
+            $project: {
+                _id: 0,
+                userId: '$_id',
+                totalDiscussions: 1,
+                user: {
+                    _id: '$user._id',
+                    name: '$user.name',
+                    email: '$user.email'
+                }
+            }
+        }
+    ]);
+
+        return result;
     }
 }
-// [
-//   {
-//     userId: ObjectId("abc123"),
-//     totalDiscussions: 7,
-//     user: {
-//       _id: ObjectId("abc123"),
-//       name: "Nguyễn Văn A",
-//       email: "a@gmail.com"
-//     }
-//   },
-//   ...
-// ]
-
 
 module.exports = DiscussionService;

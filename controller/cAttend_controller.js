@@ -370,6 +370,10 @@ const resetSingleAttendance = async (req, res) => {
         existCAttend.numberOfAbsence -= 1;
         await existCAttend.save();
     }
+    else{
+        existCAttend.numberOfAbsence -= 1;
+        await existCAttend.save();
+    }
     try {
         const records = await AttendRecord.find({ cAttendId: req.params.cAttendId });
 

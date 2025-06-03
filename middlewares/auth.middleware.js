@@ -8,6 +8,7 @@ const auth = (req, res, next) => {
         const token = req.header('Authorization').replace('Bearer ', ''); 
         const decoded = jwt.verify(token, secret);
         req.user = decoded;
+        console.log("User authenticated:", req.user);
         next();
     } catch (err) {
         res.status(400).json({ message: 'Invalid Token' });
