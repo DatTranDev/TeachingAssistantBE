@@ -242,12 +242,14 @@ const leaveGroup = async (req, res) => {
         return res.status(400).json({ error: "You are not a member of this group" });
     }
     group.members = group.members.filter(member => member.toString() !== userId.toString());
-    if (group.admin.toString() === userId.toString()) {
-        group.admin = group.members.length > 0 ? group.members[0] : null; // Assign new admin if exists
-    }
 
-    if (group.members.length === 0) 
-        await Group.findByIdAndDelete(groupId); // Delete group if no members left
+    if (group.members.length === 0) {
+        await Group.findByIdAndDelete(groupId); 
+        return res.status(200).json({ message: "Left group successfully and group deleted" });
+    }
+    if( group.admin.toString() === userId.toString()) {
+        group.admin = group.members[0];
+    } 
     
     await group.save();
     return res.status(200).json({ message: "Left group successfully", group: group });
