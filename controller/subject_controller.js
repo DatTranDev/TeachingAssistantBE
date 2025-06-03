@@ -11,6 +11,10 @@ const AttendRecord = require('../model/attendRecord.js');
 const Review = require('../model/review.js');
 const NotificationController = require('./notification_controller.js');
 const TokenService = require('../services/token.service.js');
+const DiscussionService = require('../services/discussion.service.js');
+const ReactionService = require('../services/reaction.service.js');
+const ReviewService = require('../services/review.service.js');
+const AttendRecordService = require('../services/attendRecord.service.js');
 const helper = require('../utils/helper.js');
 
 const addSubject = async(req, res)=>{
@@ -642,6 +646,87 @@ const notifyClassReschedule = async (req, res) => {
         message: "Notification sent successfully"
     });
 }
+
+const getTopParticipants = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.params.subjectId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const top = parseInt(req.query.top) || 5; 
+    const existSubject = await Subject.findById(req.params.subjectId);
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const topParticipants = await DiscussionService.getTopParticipantBySubject(req.params.subjectId, top);
+    
+    return res.status(200).json({
+        topParticipants: topParticipants
+    });
+}
+const getTopReactors = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.params.subjectId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const existSubject = await Subject.findById(req.params.subjectId);
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const top = parseInt(req.query.top) || 5;
+    const topReactors = await ReactionService.getTopReactorBySubject(req.params.subjectId, top);
+    
+    return res.status(200).json({
+        topReactors: topReactors
+    });
+}
+const getTopReviewers = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.params.subjectId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const existSubject = await Subject.findById(req.params.subjectId);
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const top = parseInt(req.query.top) || 5;
+    const topReviewers = await ReviewService.getTopReviewers(req.params.subjectId, top);
+    
+    return res.status(200).json({
+        topReviewers: topReviewers
+    });
+}
+const getTopAbsentStudents = async (req, res) => {
+    const isValidId = await helper.isValidObjectID(req.params.subjectId);
+    if(!isValidId){
+        return res.status(400).json({
+            message: "Invalid subject id"
+        });
+    }
+    const existSubject = await Subject.findById(req.params.subjectId);
+    if(!existSubject){
+        return res.status(404).json({
+            message: "Subject is not found"
+        });
+    }
+    const top = parseInt(req.query.top) || 5;
+    const topAbsentStudents = await AttendRecordService.getTopAbsentStudents(req.params.subjectId, top);
+    
+    return res.status(200).json({
+        topAbsentStudents: topAbsentStudents
+    });
+}
 module.exports = {
     addSubject, 
     joinSubject, 
@@ -653,5 +738,9 @@ module.exports = {
     findSubjectById,
     leaveSubject,
     notifyClassCancellation,
-    notifyClassReschedule
+    notifyClassReschedule,
+    getTopParticipants,
+    getTopReactors,
+    getTopReviewers,
+    getTopAbsentStudents
 };

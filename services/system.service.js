@@ -11,10 +11,10 @@ const SystemService = {
                 return;
             }
             await Promise.all(records.map(async (record) => {
-                const { studentId, subjectName } = record;
+                const { studentId, subjectName, maxAbsences, absenceCount } = record;
                 await NotificationService.send({
                     title: "Cảnh báo vắng học",
-                    content: `Bạn vượt quá số buổi vắng học cho môn ${subjectName}. Vui lòng kiểm tra lại.`,
+                    content: `Bạn vắng quá số buổi vắng học cho môn ${subjectName}. Tối đa cho phép là ${maxAbsences} buổi, bạn đã vắng ${absenceCount} buổi.`,
                     type: "absent_warning",
                     referenceModel: "Subject",
                     referenceId: record.subjectId

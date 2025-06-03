@@ -339,6 +339,7 @@ const resetAttendance = async(req, res)=>{
     existCAttend.timeExpired = 0;
     existCAttend.teacherLatitude = 0;
     existCAttend.teacherLongitude = 0;
+    existCAttend.numberOfAttend = 1;
     await existCAttend.save();
     await AttendRecord.deleteMany({
         cAttendId: req.params.cAttendId
@@ -365,13 +366,13 @@ const resetSingleAttendance = async (req, res) => {
             message: "CAttend is not found"
         });
     }
-    if(existCAttend.acceptedNumber == existCAttend.numberOfAbsence){
+    if(existCAttend.acceptedNumber == existCAttend.numberOfAttend){
         existCAttend.acceptedNumber -= 1;
-        existCAttend.numberOfAbsence -= 1;
+        existCAttend.numberOfAttend -= 1;
         await existCAttend.save();
     }
     else{
-        existCAttend.numberOfAbsence -= 1;
+        existCAttend.numberOfAttend -= 1;
         await existCAttend.save();
     }
     try {
