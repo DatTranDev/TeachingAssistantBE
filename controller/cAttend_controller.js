@@ -370,10 +370,14 @@ const resetSingleAttendance = async (req, res) => {
     if(existCAttend.acceptedNumber == existCAttend.numberOfAttend){
         existCAttend.acceptedNumber -= 1;
         existCAttend.numberOfAttend -= 1;
+        existCAttend.isActive = false;
+        existCAttend.timeExpired = 0;
         await existCAttend.save();
     }
     else{
         existCAttend.numberOfAttend -= 1;
+        existCAttend.isActive = false;
+        existCAttend.timeExpired = 0;
         await existCAttend.save();
     }
     try {
