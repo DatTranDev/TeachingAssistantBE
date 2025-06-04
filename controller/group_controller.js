@@ -111,6 +111,13 @@ const createGroup = async (req, res) => {
     if( type == RANDOM){
         await CAttendService.get(cAttendId);
     }
+    // Check if user already in another default group of subject
+    if (type === DEFAULT) {
+        const existGroup = await Group.findOne({ subjectId: subjectId, type: DEFAULT, members: { $in: [userId] } });
+        if (existGroup) {
+            return res.status(400).json({ error: "Some user already in a default group for this subject" });
+        }
+    }
 
     const group = new Group({
         name: name,
@@ -203,13 +210,13 @@ const getDefaultGroups = async (req, res) => {
 }
 const getUserRandomGroups = async (req, res) => {
     const userId = req.user.userId;
-    const cAttendId = req.params.cAttendId;
-    const isValidId = await helper.isValidObjectID(cAttendId);
+    const subjectId = req.params.subjectId;
+    const isValidId = await helper.isValidObjectID(subjectId);
     if (!isValidId) {
         return res.status(400).json({ error: "Invalid id" });
     }
-    const groups = await Group.find({ cAttendId: cAttendId, type: 'random', members: userId }).populate('members').sort({ createdAt: -1 });
-    if (!groups || groups.length === 0) {
+    const groups = await Group.find({ subjectId: subjectId, type: 'random', members: { $in: [userId]} }).populate('members').sort({ createdAt: -1 });
+    if (!groups) {
         return res.status(404).json({ error: "Random group not found for this user" });
     }
     return res.status(200).json({ groups: groups });

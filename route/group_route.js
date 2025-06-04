@@ -12,7 +12,7 @@ route.patch('/update/:id', auth, groupController.updateGroup);
 route.get('/default/all/:subjectId', auth, groupController.getDefaultGroups);
 route.get('/random/all/:cAttendId', auth, groupController.getRandomGroups);
 route.get('/default/:subjectId', auth, groupController.getUserDefaultGroup);
-route.get('/random/:cAttendId', auth, groupController.getUserRandomGroups);
+route.get('/random/:subjectId', auth, groupController.getUserRandomGroups);
 route.delete('/leave/:groupId', auth, groupController.leaveGroup);
 
 
