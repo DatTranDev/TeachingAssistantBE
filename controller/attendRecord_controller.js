@@ -4,6 +4,7 @@ const User = require('../model/user.js');
 const CAttend = require('../model/cAttend.js');
 const Subject = require('../model/subject.js');
 const helper = require('../utils/helper.js');
+const UserSubject = require('../model/userSubject.js');
 
 const addAttendRecord = async (req, res) => {
     try {
@@ -197,6 +198,35 @@ const updateForStudent = async (req, res) => {
 };
 const markExcusedAttendance = async (req, res) => {
     try{
+        // Create attendance record for all students, with default status is "KP"
+        if (!req.body.subjectId || !req.body.cAttendId || !req.body.date) {
+            return res.status(400).json({message: "Missing required fields"});
+        }
+        if (!helper.isValidObjectID(req.body.subjectId) || !helper.isValidObjectID(req.body.cAttendId)) {
+            return res.status(400).json({message: "Invalid ID"});
+        }
+        const existSubject = await Subject.findById(req.body.subjectId);
+        if (!existSubject) {
+            return res.status(404).json({message: "Subject not found"});
+        }
+        const user = await UserSubject.find({ subjectId: req.body.subjectId, role: "student" });
+        await Promise.all(user.map(async us => {
+            const existAttendRecord = await AttendRecord.findOne({ cAttendId: req.body.cAttendId, studentId: us.userId });
+            if (!existAttendRecord) {
+                const newAttendRecord = new AttendRecord({
+                    cAttendId: req.body.cAttendId,
+                    studentId: us.userId,
+                    status: "KP",
+                    studentLatitude: 0,
+                    studentLongitude: 0,
+                    listStatus: [],
+                    FCMToken: "N/A",
+                    numberOfAbsence: 0
+                });
+                await newAttendRecord.save();
+            }
+        }));
+
         const {subjectId, cAttendId, date} = req.body;
         const listAR = await AbsenceRequest.find({subjectId: subjectId, status: "approved", date: helper.parseDate(date)});
         await Promise.all(listAR.map(async ar => {

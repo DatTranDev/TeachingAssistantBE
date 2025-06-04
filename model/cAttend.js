@@ -38,7 +38,7 @@ const cAttendSchema = new Schema({
     numberOfAttend: {
         type: Number,
         required: true,
-        default: 1,
+        default: 0,
     },
     acceptedNumber: {
         type: Number,
