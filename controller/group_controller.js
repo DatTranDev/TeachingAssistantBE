@@ -195,24 +195,24 @@ const getDefaultGroups = async (req, res) => {
     if (!isValidId) {
         return res.status(400).json({ error: "Invalid id" });
     }
-    const groups = await Group.find({ subjectId: subjectId, type: 'default' }).populate('members');
+    const groups = await Group.find({ subjectId: subjectId, type: 'default' }).populate('members').sort({ createdAt: -1 });
     if (!groups) {
         return res.status(404).json({ error: "Default groups not found" });
     }
     return res.status(200).json({ groups: groups });
 }
-const getUserRandomGroup = async (req, res) => {
+const getUserRandomGroups = async (req, res) => {
     const userId = req.user.userId;
     const cAttendId = req.params.cAttendId;
     const isValidId = await helper.isValidObjectID(cAttendId);
     if (!isValidId) {
         return res.status(400).json({ error: "Invalid id" });
     }
-    const group = await Group.findOne({ cAttendId: cAttendId, type: 'random', members: userId }).populate('members');
-    if (!group) {
+    const groups = await Group.find({ cAttendId: cAttendId, type: 'random', members: userId }).populate('members').sort({ createdAt: -1 });
+    if (!groups || groups.length === 0) {
         return res.status(404).json({ error: "Random group not found for this user" });
     }
-    return res.status(200).json({ group: group });
+    return res.status(200).json({ groups: groups });
 }
 const getUserDefaultGroup = async (req, res) => {
     const userId = req.user.userId;
@@ -279,7 +279,7 @@ module.exports = {
     updateGroup,
     getRandomGroups,
     getDefaultGroups,
-    getUserRandomGroup,
+    getUserRandomGroups,
     getUserDefaultGroup,
     leaveGroup,
     notifyCrossGradingPairs
