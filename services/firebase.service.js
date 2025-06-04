@@ -79,6 +79,7 @@ const FirebaseService = {
                     throw new AppError('Failed to unsubscribe from topic: ' + err.message, 500);
                 });
             }));
+            await TokenService.removeFCM(token);
         }catch(err){
             throw new AppError('Failed to unsubscribe from topic: ' + err.message, 500);
         }

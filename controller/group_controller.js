@@ -2,6 +2,7 @@ const Group = require('../model/group.js');
 const User = require('../model/user.js');
 const CAttend = require('../model/cAttend.js');
 const AttendRecord = require('../model/attendRecord.js');
+const GroupMessage = require('../model/groupMessage.js');
 const UserSubject = require('../model/userSubject.js');
 const CAttendService = require('../services/cAttend.service.js');
 const GroupService = require('../services/group.service.js');
@@ -254,7 +255,8 @@ const leaveGroup = async (req, res) => {
     group.members = group.members.filter(member => member.toString() !== userId.toString());
 
     if (group.members.length === 0) {
-        await Group.findByIdAndDelete(groupId); 
+        await Group.findByIdAndDelete(groupId);
+        await GroupMessage.deleteMany({ groupId: groupId }); 
         return res.status(200).json({ message: "Left group successfully and group deleted" });
     }
     if( group.admin.toString() === userId.toString()) {

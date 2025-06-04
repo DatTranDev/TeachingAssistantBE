@@ -15,8 +15,15 @@ const TokenService = {
     } catch (err) {
         throw new Error(`Error saving FCM token: ${err.message}`);
     }
-}
-,
+},
+removeFCM: async (token) => {
+    try {
+        const result = await FCMToken.deleteOne({ FCMToken: token });
+        return true;
+    } catch (err) {
+        throw new Error(`Error removing FCM token: ${err.message}`);
+    }
+},
     getFCM: async (userId) => {
         const token = await FCMToken.findOne({ user: userId });
         if (!token) throw new Error('FCM token not found for this user');

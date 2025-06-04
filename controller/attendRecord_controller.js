@@ -228,6 +228,7 @@ const markExcusedAttendance = async (req, res) => {
         }));
 
         const {subjectId, cAttendId, date} = req.body;
+        console.log(date);
         const listAR = await AbsenceRequest.find({subjectId: subjectId, status: "approved", date: helper.parseDate(date)});
         await Promise.all(listAR.map(async ar => {
             const attendRecord = await AttendRecord.findOne({cAttendId: ar.cAttendId, studentId: ar.studentId});
@@ -249,6 +250,7 @@ const markExcusedAttendance = async (req, res) => {
         }));
         return res.status(200).json({message: "Mark excused attendance successfully"});
     }catch(err){
+        console.error("Error in markExcusedAttendance:", err)
         return res.status(500).json({message: "Server error", error: err});
     }
 };
