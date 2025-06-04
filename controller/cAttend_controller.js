@@ -340,6 +340,7 @@ const resetAttendance = async(req, res)=>{
     existCAttend.teacherLatitude = 0;
     existCAttend.teacherLongitude = 0;
     existCAttend.numberOfAttend = 0;
+    existCAttend.acceptedNumber = 0;
     await existCAttend.save();
     await AttendRecord.deleteMany({
         cAttendId: req.params.cAttendId
