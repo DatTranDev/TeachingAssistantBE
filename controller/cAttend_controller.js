@@ -213,6 +213,15 @@ const deleteCAttend = async(req, res)=>{
                 message: "Internal server error: "+err
             });
         });
+    await Group.deleteMany({
+        cAttendId: cAttendId
+    }).catch(
+        err=>{
+            return res.status(500).json({
+                message: "Internal server error: "+err
+            });
+        }
+    );
     await CAttend.deleteOne({ _id: req.params.cAttendId })
     .then(async () => {
         // Decrease the currentSession of the subject
