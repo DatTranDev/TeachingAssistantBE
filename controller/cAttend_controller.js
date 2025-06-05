@@ -3,6 +3,7 @@ const helper = require('../utils/helper.js');
 const User = require('../model/user.js');
 const Subject = require('../model/subject.js');
 const UserSubject = require('../model/userSubject.js');
+const Group = require('../model/group.js');
 const ClassSession = require('../model/classSession.js');
 const Review = require('../model/review.js');
 const AttendRecord = require('../model/attendRecord.js');
