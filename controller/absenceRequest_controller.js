@@ -139,10 +139,8 @@ const getTeacherAbsenceRequest = async (req, res) => {
 const getStudentAbsenceRequest = async (req, res) => {
     const userIdFromToken = req.user.userId;
     const subjectId = req.query.subjectId;
-    const absenceRequests = await AbsenceRequest.find({studentId: userIdFromToken})
-    .populate('subjectId').filter(
-        req => subjectId ? req.subjectId._id.toString() === subjectId : true
-    );
+    const absenceRequests = await AbsenceRequest.find({studentId: userIdFromToken, subjectId: subjectId})
+    .populate('subjectId');
     return res.status(200).json({
         absenceRequests: absenceRequests
     });
