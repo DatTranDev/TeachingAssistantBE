@@ -27,5 +27,5 @@ const recipientSchema = new Schema({
   });
   recipientSchema.set('toJSON', { virtuals: true });
   
-  module.exports = mongoose.model('NotificationRecipient', recipientSchema);
-  
+  const NotificationRecipient = mongoose.model('NotificationRecipient', recipientSchema);
+  module.exports = NotificationRecipient;

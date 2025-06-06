@@ -64,7 +64,8 @@ const DiscussionService = {
             user: {
                 _id: '$user._id',
                 name: '$user.name',
-                email: '$user.email'
+                email: '$user.email',
+                avatar: '$user.avatar'
             }
             }
         }
@@ -134,7 +135,8 @@ const DiscussionService = {
                 user: {
                     _id: '$user._id',
                     name: '$user.name',
-                    email: '$user.email'
+                    email: '$user.email',
+                    avatar: '$user.avatar'
                 }
             }
         }

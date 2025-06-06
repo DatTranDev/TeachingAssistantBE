@@ -2,7 +2,7 @@ const Review = require('../model/review.js');
 const mongoose = require('mongoose');
 const { NotFoundError } = require('../utils/AppError.js');
 const ReviewService = {
-    getTopReviewers: async (subjectId, limit = 5) => {
+    getTopReviewers: async (subjectId, top = 5) => {
         const objectId = new mongoose.Types.ObjectId(subjectId);
 
         const result = await Review.aggregate([
@@ -65,7 +65,8 @@ const ReviewService = {
                     user: {
                         _id: '$user._id',
                         name: '$user.name',
-                        email: '$user.email'
+                        email: '$user.email',
+                        avatar: '$user.avatar'
                     }
                 }
             }

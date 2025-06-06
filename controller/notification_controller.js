@@ -1,3 +1,4 @@
+const { type } = require('os');
 const Notification = require('../model/notification.js');
 const NotificationRecipient = require('../model/notificationRecipient.js');
 const FirebaseService = require('../services/firebase.service.js');
@@ -11,6 +12,7 @@ const FcreateNotification = async (notification, recipient, topic) => {
         const noti = {
           title: notification.title,
           body: notification.content,
+          type: notification.type
         }
         if (topic) {
           await FirebaseService.sendNotification(noti, topic);

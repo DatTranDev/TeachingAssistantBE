@@ -1,6 +1,10 @@
 const AbsenceRequest = require('../model/absenceRequest.js');
 const User = require('../model/user.js');
 const Subject = require('../model/subject.js');
+const AttendRecord = require('../model/attendRecord.js');
+const CAttend = require('../model/cAttend.js');
+const Notification = require('../model/notification.js');
+const NotificationRecipient = require('../model/notificationRecipient.js');
 
 const NotificationController = require('./notification_controller.js');
 const helper = require('../utils/helper.js');
@@ -81,9 +85,26 @@ const updateRequest = async (req, res) => {
     absenceRequest.reviewedBy = userIdFromToken;
     absenceRequest.reviewedAt = new Date();
     absenceRequest.comment = req.body.comment;
+    if(absenceRequest.status == 'approved'){
+        const list = await CAttend.find({
+            date: absenceRequest.date
+        }).populate('classSessionId');
+        const finded = list.find((item) => {
+            return item.classSessionId.subjectId.toString() == absenceRequest.subjectId._id.toString();
+        });
+        if(finded)
+            await AttendRecord.findOneAndUpdate({
+                cAttendId: finded._id,
+                studentId: absenceRequest.studentId
+            },  
+            {
+                status: 'CP'
+            })
+    }
+       
     await absenceRequest.save().then(async(absenceRequest) => {
         const title = absenceRequest.status == 'approved' ? "Đơn xin nghỉ học đã được duyệt" : "Đơn xin nghỉ học đã bị từ chối";
-        const content = absenceRequest.status == 'approved' ? "Đơn xin nghỉ học của bạn đã được duyệt" : `Lý do: ${req.body.comment}`;
+        const content = absenceRequest.status == 'approved' ? `Môn ${absenceRequest.subjectId.name}, ngày ${helper.formatNoWeekday(absenceRequest.date)}` : ``;
         await NotificationController.FcreateNotification({
             title: title,
             content: content,
@@ -164,7 +185,25 @@ const deleteRequest = async (req, res) => {
             message: "Unauthorized action"
         });
     }
-    await absenceRequest.delete().then(() => {
+    //Delete related notification and notification recipient
+    await Notification.deleteMany({
+        referenceModel: "AbsenceRequest",
+        referenceId: absenceRequest._id
+    }).then(async (list) => {
+        if (list.length > 0) {
+            await NotificationRecipient.deleteMany({
+                notificationId: { $in: list.map(item => item._id) }
+            });
+        }
+        return;
+    }).catch((err) => {
+        return res.status(500).json({
+            message: err.message
+        });
+    });
+
+
+    await AbsenceRequest.findByIdAndDelete(req.params.id).then(() => {
         return res.status(200).json({
             message: "Delete absence request successfully"
         });

@@ -51,4 +51,5 @@ absenceRequestSchema.virtual("id").get(function(){
 absenceRequestSchema.set('toJSON',{
     "virtuals": true
 });
-module.exports = mongoose.model('AbsenceRequest', absenceRequestSchema);
+const AbsenceRequest = mongoose.model('AbsenceRequest', absenceRequestSchema);
+module.exports = AbsenceRequest;

@@ -35,7 +35,7 @@ const createRandomGroup = async (req, res) => {
 
     const existGroup = await Group.find({ cAttendId: cAttendId });
     if (existGroup.length > 0) {
-        return res.status(400).json({ error: "Group already exists" });
+        await Group.deleteMany({ cAttendId: cAttendId });
     }
 
     const students = await AttendRecord.find({ cAttendId: cAttendId, status: "CM" }).populate('studentId');
@@ -280,6 +280,16 @@ const notifyCrossGradingPairs = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 }
+const deleteRandomGroups = async (req, res) => {
+    const cAttendId = req.params.cAttendId;
+    const isValidId = await helper.isValidObjectID(cAttendId);
+    if (!isValidId) {
+        return res.status(400).json({ error: "Invalid id" });
+    }
+    await Group.deleteMany({ cAttendId: cAttendId, type: 'random' });
+    return res.status(200).json({ message: "Random groups deleted successfully" });
+}
+
 module.exports = { 
     createRandomGroup,
     getGroupByCAttendId,
@@ -291,5 +301,6 @@ module.exports = {
     getUserRandomGroups,
     getUserDefaultGroup,
     leaveGroup,
-    notifyCrossGradingPairs
+    notifyCrossGradingPairs,
+    deleteRandomGroups
 }

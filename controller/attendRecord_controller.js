@@ -42,8 +42,14 @@ const addAttendRecord = async (req, res) => {
 
         if (existingRecord) {
             existingRecord.status = newStatus;
-            existingRecord.listStatus.push(statusEntry);
+            if (existingRecord.listStatus.some(entry => entry.index === index)) {
+                const existingIndex = existingRecord.listStatus.findIndex(entry => entry.index === index);
+                existingRecord.listStatus[existingIndex].status = newStatus;
+            }
+            else
+                existingRecord.listStatus.push(statusEntry);
             existingRecord.numberOfAbsence = isPresent ? existingRecord.numberOfAbsence : existingRecord.numberOfAbsence + 1;
+            existingRecord.status = existingRecord.numberOfAbsence >= existCAttend.acceptedNumber ? "CM" : "KP";
             await existingRecord.save();
             return res.status(200).json({ attendRecord: existingRecord });
         }

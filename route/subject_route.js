@@ -24,8 +24,8 @@ route.get('/:subjectId/students/exportExcel', fileGenerateController.getStudentL
 route.post('/notify/classCancel',auth, subjectController.notifyClassCancellation);
 route.post('/notify/classReschedule',auth, subjectController.notifyClassReschedule);
 
-route.get('/topParticipants/:subjectId', auth, subjectController.getTopParticipants);
-route.get('/topReactors/:subjectId', auth, subjectController.getTopReactors);
-route.get('/topReviewers/:subjectId', auth, subjectController.getTopReviewers);
-route.get('/topAbsentees/:subjectId', auth, subjectController.getTopAbsentStudents);
+route.get('/top-participants/:subjectId', auth, subjectController.getTopParticipants);
+route.get('/top-reactors/:subjectId', auth, subjectController.getTopReactors);
+route.get('/top-reviewers/:subjectId', auth, subjectController.getTopReviewers);
+route.get('/top-absentees/:subjectId', auth, subjectController.getTopAbsentStudents);
 module.exports = route;

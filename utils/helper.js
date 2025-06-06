@@ -70,6 +70,12 @@ const parseDate = (dateString) => {
     const year = parseInt(parts[2], 10);
     return new Date(year, month, day);
 };
+const formatNoWeekday = (date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
 module.exports = {
     isValidEmail, 
     isValidPhoneNumber, 
@@ -77,5 +83,6 @@ module.exports = {
     randomCode, 
     getDistanceInKm, 
     isPresent,
-    parseDate
+    parseDate,
+    formatNoWeekday
 }

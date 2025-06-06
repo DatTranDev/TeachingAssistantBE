@@ -31,6 +31,11 @@ const groupSchema = new Schema({
         ref: 'Subject',
         required: true,
     },
+    reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group',
+        required: false,
+    },
     autoAccept: {
         type: Boolean,
         required: true,

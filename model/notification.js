@@ -19,6 +19,7 @@ const notificationSchema = new Schema({
     type: String,
     enum: ['absent_warning', 'absence_request', 'class_cancellation', 'class_reschedule','other'],
     required: true,
+    default: 'other'
   },
   referenceModel: { 
     type: String 
@@ -35,4 +36,5 @@ notificationSchema.virtual("id").get(function () {
 });
 notificationSchema.set('toJSON', { virtuals: true });
 
-module.exports = mongoose.model('Notification', notificationSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
+module.exports = Notification;

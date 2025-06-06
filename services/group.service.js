@@ -39,6 +39,7 @@ const GroupService = {
 
             const groupA = await Group.findById(group).select('name members');
             const groupB = await Group.findById(reviewedBy).select('name');
+            await Group.findByIdAndUpdate(group, { reviewedBy: reviewedBy });
 
             if (!groupA || !groupB) continue;
 
