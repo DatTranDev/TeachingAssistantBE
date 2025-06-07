@@ -146,9 +146,9 @@ io.on('connection', (socket) => {
         const roomName = `${subjectID}`;  
         io.to(roomName).emit("receiveUpdateReaction", { messageID, reaction });
     })
-    socket.on('sendAttendance', ({subjectID, student})=>{
+    socket.on('sendAttendance', ({subjectID, student, index, status})=>{
         const roomName = `${subjectID}`;  
-        io.to(roomName).emit("receiveUserAttendance", student);
+        io.to(roomName).emit("receiveUserAttendance", {student, index, status});
     })
     socket.on('sendUpdateAttendance', ({subjectID, student})=>{
         const roomName = `${subjectID}`;  
