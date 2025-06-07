@@ -28,7 +28,9 @@ const createDiscussion = async (req, res) => {
             title: title,
             content: content,
             images: images,
-            replyOf: replyOf
+            replyOf: replyOf,
+            upvotes: [],
+            downvotes: []
         });
         await discussion.save();
         return res.status(201).json({
@@ -135,9 +137,62 @@ const findByCAttendId = async(req, res)=>{
     results.discussions = discussions
     return res.status(200).json(results);
 }
+const voteDiscussion = async (req, res) => {
+  try {
+    const discussionId = req.params.id;
+    const userId = req.user.id;
+    const { type } = req.body; // 'upvote' or 'downvote'
+
+    if (!['upvote', 'downvote'].includes(type)) {
+      return res.status(400).json({ message: 'Invalid vote type' });
+    }
+
+    const discussion = await Discussion.findById(discussionId);
+    if (!discussion) {
+      return res.status(404).json({ message: 'Discussion not found' });
+    }
+    if(discussion.upvotes == null)
+        discussion.upvotes = [];
+    if(discussion.downvotes == null)
+        discussion.downvotes = []; 
+    const hasUpvoted = discussion.upvotes.includes(userId);
+    const hasDownvoted = discussion.downvotes.includes(userId);
+
+    if (type === 'upvote') {
+      if (hasDownvoted) 
+        discussion.downvotes.filter(id => id.toString() !== userId.toString());
+
+      if (hasUpvoted) {
+        discussion.upvotes.filter(id => id.toString() !== userId.toString());
+      } else {
+        discussion.upvotes.push(userId);
+      }
+    } else if (type === 'downvote') {
+      if (hasUpvoted) 
+        discussion.upvotes.filter(id => id.toString() !== userId.toString());
+
+      if (hasDownvoted) {
+        discussion.downvotes.filter(id => id.toString() !== userId.toString());
+      } else {
+        discussion.downvotes.push(userId);
+      }
+    }
+
+    await discussion.save();
+
+    return res.status(200).json({
+      message: 'Vote updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Vote error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
 module.exports = {
     createDiscussion,
     updateDiscussion,
     deleteDiscussion,
-    findByCAttendId
+    findByCAttendId,
+    voteDiscussion
 }

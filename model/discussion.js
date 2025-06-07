@@ -32,7 +32,15 @@ const discussionSchema = new Schema({
         ref: 'Discussion',
         default: null,
         required: false,
-    }
+    },
+    upvotes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    downvotes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
 }, {
     timestamps: true
 });
