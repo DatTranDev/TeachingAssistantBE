@@ -33,9 +33,9 @@ const createRandomGroup = async (req, res) => {
         return res.status(403).json({ error: "You are not the host of this class" });
     }
 
-    const existGroup = await Group.find({ cAttendId: cAttendId });
+    const existGroup = await Group.find({ cAttendId: cAttendId, type: 'random' });
     if (existGroup.length > 0) {
-        await Group.deleteMany({ cAttendId: cAttendId });
+        await Group.deleteMany({ cAttendId: cAttendId, type: 'random' });
     }
 
     const students = await AttendRecord.find({ cAttendId: cAttendId, status: "CM" }).populate('studentId');
