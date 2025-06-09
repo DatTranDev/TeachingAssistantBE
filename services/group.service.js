@@ -9,10 +9,11 @@ const GroupService = {
             throw new NotFoundError(`Invalid ID format: ${id}`);
         }
         const group = await Group.findById(id)
-            .populate('members', 'name email')
-            .populate('admin', 'name email')
-            .populate('cAttendId', 'name')
-            .populate('subjectId', 'name');
+            .populate('members', '_id name email')
+            .populate('admin', '_id name email')
+            .populate('cAttendId', '_id')
+            .populate('subjectId', '_id name')
+            .populate('reviewedBy', '_id name');
         if (!group) throw new NotFoundError(`Group with ID ${id} not found`);
         return group;
     },
@@ -39,7 +40,7 @@ const GroupService = {
 
             const groupA = await Group.findById(group).select('name members');
             const groupB = await Group.findById(reviewedBy).select('name');
-            await Group.findByIdAndUpdate(group, { reviewedBy: reviewedBy });
+            await Group.findByIdAndUpdate(reviewedBy, { reviewedBy: group });
 
             if (!groupA || !groupB) continue;
 
