@@ -14,6 +14,7 @@ route.get('/random/all/:cAttendId', auth, groupController.getRandomGroups);
 route.get('/default/:subjectId', auth, groupController.getUserDefaultGroup);
 route.get('/random/:subjectId', auth, groupController.getUserRandomGroups);
 route.delete('/leave/:groupId', auth, groupController.leaveGroup);
+route.delete('/randoms/:cAttendId', auth, groupController.deleteRandomGroups);
 
 
 // Group message routes
