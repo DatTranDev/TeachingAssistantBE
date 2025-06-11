@@ -140,7 +140,8 @@ const findByCAttendId = async(req, res)=>{
 const voteDiscussion = async (req, res) => {
   try {
     const discussionId = req.params.id;
-    const userId = req.user.id;
+    const userId = req.user.userId;
+    console.log('User ID:', userId);
     const { type } = req.body; // 'upvote' or 'downvote'
 
     if (!['upvote', 'downvote'].includes(type)) {
@@ -161,14 +162,14 @@ const voteDiscussion = async (req, res) => {
       // Xóa user khỏi downvotes nếu có
       if (hasDownvoted) {
         discussion.downvotes = discussion.downvotes.filter(
-          (id) => id.toString() !== userId.toString()
+          (id) => id && id.toString() !== userId.toString()
         );
       }
 
       if (hasUpvoted) {
         // Bỏ vote nếu đã upvote trước đó
         discussion.upvotes = discussion.upvotes.filter(
-          (id) => id.toString() !== userId.toString()
+          (id) => id && id.toString() !== userId.toString()
         );
       } else {
         discussion.upvotes.push(userId);
@@ -178,19 +179,19 @@ const voteDiscussion = async (req, res) => {
       // Xóa user khỏi upvotes nếu có
       if (hasUpvoted) {
         discussion.upvotes = discussion.upvotes.filter(
-          (id) => id.toString() !== userId.toString()
+          (id) => id && id.toString() !== userId.toString()
         );
       }
 
       if (hasDownvoted) {
         discussion.downvotes = discussion.downvotes.filter(
-          (id) => id.toString() !== userId.toString()
+          (id) => id && id.toString() !== userId.toString()
         );
       } else {
         discussion.downvotes.push(userId);
       }
     }
-
+    console.log('Updated discussion:', discussion);
     await discussion.save();
 
     return res.status(200).json({
