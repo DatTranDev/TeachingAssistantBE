@@ -151,28 +151,41 @@ const voteDiscussion = async (req, res) => {
     if (!discussion) {
       return res.status(404).json({ message: 'Discussion not found' });
     }
-    if(discussion.upvotes == null)
-        discussion.upvotes = [];
-    if(discussion.downvotes == null)
-        discussion.downvotes = []; 
+    discussion.upvotes = discussion.upvotes || [];
+    discussion.downvotes = discussion.downvotes || [];
+
     const hasUpvoted = discussion.upvotes.includes(userId);
     const hasDownvoted = discussion.downvotes.includes(userId);
 
     if (type === 'upvote') {
-      if (hasDownvoted) 
-        discussion.downvotes.filter(id => id.toString() !== userId.toString());
+      // Xóa user khỏi downvotes nếu có
+      if (hasDownvoted) {
+        discussion.downvotes = discussion.downvotes.filter(
+          (id) => id.toString() !== userId.toString()
+        );
+      }
 
       if (hasUpvoted) {
-        discussion.upvotes.filter(id => id.toString() !== userId.toString());
+        // Bỏ vote nếu đã upvote trước đó
+        discussion.upvotes = discussion.upvotes.filter(
+          (id) => id.toString() !== userId.toString()
+        );
       } else {
         discussion.upvotes.push(userId);
       }
+
     } else if (type === 'downvote') {
-      if (hasUpvoted) 
-        discussion.upvotes.filter(id => id.toString() !== userId.toString());
+      // Xóa user khỏi upvotes nếu có
+      if (hasUpvoted) {
+        discussion.upvotes = discussion.upvotes.filter(
+          (id) => id.toString() !== userId.toString()
+        );
+      }
 
       if (hasDownvoted) {
-        discussion.downvotes.filter(id => id.toString() !== userId.toString());
+        discussion.downvotes = discussion.downvotes.filter(
+          (id) => id.toString() !== userId.toString()
+        );
       } else {
         discussion.downvotes.push(userId);
       }
