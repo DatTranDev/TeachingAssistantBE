@@ -126,6 +126,12 @@ io.on('connection', (socket) => {
         }
         //console.log(`Message from ${dataMsg.sender} sent to subject room: ${subjectID}`);
     });
+    socket.on('sendReply', async ({subjectID, message})=>{
+        io.to(subjectID).emit("receiveReply", message);
+    })
+    socket.on('sendVote', async ({subjectID, message})=>{
+        io.to(subjectID).emit("receiveVote", message);
+    })
 
     socket.on("sendMessageToChannel", async ({ subjectID, channelID, message, dataMsg }) => {
         const roomName = `${subjectID}_${channelID}`;  
