@@ -94,10 +94,10 @@ const FirebaseService = {
                     body: message.body
                 },
                 data: {
-                    sender: message.senderId?.toString() || '',
-                    type: message.type || '',
-                    subject: message.subject || '',
-                    room: message.room || ''
+                    sender: message.senderId ? String(message.senderId) : '',
+                    type: message.type ? String(message.type) : '',
+                    subject: message.subject ? String(message.subject) : '',
+                    room: message.room ? String(message.room) : '',
                 },
                 token: tokenList[i]
                 };

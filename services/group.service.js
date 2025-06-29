@@ -47,6 +47,7 @@ const GroupService = {
             const messageToGroupA = {
                 title: 'Thông báo chấm chéo',
                 senderId: senderId,
+                type: 'cross-grading',
                 body: `Nhóm của bạn (${groupA.name}) sẽ chấm chéo nhóm ${groupB.name}`,
             };
 
@@ -55,6 +56,7 @@ const GroupService = {
             const messageToGroupB = {
                 title: 'Thông báo chấm chéo',
                 senderId: senderId,
+                type: 'cross-grading',
                 body: `Nhóm của bạn (${groupB.name}) sẽ được chấm bởi nhóm ${groupA.name}`,
             };
 
