@@ -48,7 +48,7 @@ This is an Express.js project designed to help lecturers and students manage cla
 ## 📥 APK Download
 
 You can download the mobile app APK from the link below:
-[Install APK](https://drive.google.com/file/d/1Zjc40ntRcGHRqd_4H7RIh6JjEf2EVQdS/view?usp=sharing)
+[Install APK](https://drive.google.com/file/d/1CztVnK6Kw-Dj8olIicc3tpUeWA2dImOn/view?usp=sharing)
 
 Our mobile code:
 [Mobile Code](https://github.com/DatTranDev/TeachingAssistantFE)
