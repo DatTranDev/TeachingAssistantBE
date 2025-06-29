@@ -119,10 +119,10 @@ const FirebaseService = {
                     body: message.type !== 'attendance' ? `${message.sender}: ${message.body}` : `Môn học: ${message.subject}`
                 },
                 data: {
-                    sender: message.senderId,
-                    type: message.type,
-                    subject: message.subject,
-                    room: message.room,
+                    sender: message.senderId ? String(message.senderId) : '',
+                    type: message.type ? String(message.type) : '',
+                    subject: message.subject ? String(message.subject) : '',
+                    room: message.room ? String(message.room) : '',
                 },
                 topic: topic
             };

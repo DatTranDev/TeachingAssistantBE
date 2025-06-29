@@ -103,6 +103,14 @@ const updateRequest = async (req, res) => {
                 },
                 { new: true }
             );
+            if(!attendRecord) {
+                const newAttendRecord = new AttendRecord({
+                    cAttendId: finded._id,
+                    studentId: absenceRequest.studentId,
+                    status: 'CP'
+                });
+                await newAttendRecord.save();
+            }
         }
     }
        
