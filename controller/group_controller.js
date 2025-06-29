@@ -278,6 +278,7 @@ const leaveGroup = async (req, res) => {
     return res.status(200).json({ message: "Left group successfully", group: group });
 }
 const notifyCrossGradingPairs = async (req, res) => {
+    const userId = req.user.userId;
     const pairs = req.body.pairs;
 
     if (!Array.isArray(pairs) || pairs.length === 0) {
@@ -285,7 +286,7 @@ const notifyCrossGradingPairs = async (req, res) => {
     }
 
     try {
-        await GroupService.notifyCrossGradingPairs(pairs);
+        await GroupService.notifyCrossGradingPairs(pairs, userId);
         return res.status(200).json({ message: "Cross grading notifications sent" });
     } catch (error) {
         return res.status(500).json({ error: error.message });
