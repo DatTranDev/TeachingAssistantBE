@@ -90,16 +90,20 @@ const updateRequest = async (req, res) => {
             date: absenceRequest.date
         }).populate('classSessionId');
         const finded = list.find((item) => {
-            return item.classSessionId.subjectId.toString() == absenceRequest.subjectId._id.toString();
+            return item.classSessionId && item.classSessionId.subjectId.toString() === absenceRequest.subjectId._id.toString();
         });
-        if(finded)
-            await AttendRecord.findOneAndUpdate({
-                cAttendId: finded._id,
-                studentId: absenceRequest.studentId
-            },  
-            {
-                status: 'CP'
-            })
+        if(finded) {
+            const attendRecord = await AttendRecord.findOneAndUpdate(
+                {
+                    cAttendId: finded._id,
+                    studentId: absenceRequest.studentId
+                },  
+                {
+                    status: 'CP'
+                },
+                { new: true }
+            );
+        }
     }
        
     await absenceRequest.save().then(async(absenceRequest) => {
