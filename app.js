@@ -168,6 +168,10 @@ io.on('connection', (socket) => {
         const roomName = `${subjectID}`;
         io.to(roomName).emit("receiveDeleteMessage", messageID);
     })
+    socket.on('sendRevokedMessage', ({subjectID, messageID})=>{
+        const roomName = `${subjectID}`;
+        io.to(roomName).emit("receiveRevokedMessage", messageID);
+    })
 
     socket.on("leaveSubjectChannel", ({ userID, subjectID, channelID }) => {
         const roomName = `${subjectID}_${channelID}`;
