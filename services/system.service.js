@@ -14,7 +14,7 @@ const SystemService = {
                 const { studentId, subjectName, maxAbsences, absenceCount } = record;
                 await NotificationService.send({
                     title: "Cảnh báo vắng học",
-                    content: `Bạn vắng quá số buổi vắng học cho môn ${subjectName}. Tối đa cho phép là ${maxAbsences} buổi, bạn đã vắng ${absenceCount} buổi.`,
+                    content: `Môn ${subjectName} tối đa cho phép vắng là ${maxAbsences} buổi, bạn đã vắng ${absenceCount} buổi.`,
                     type: "absent_warning",
                     referenceModel: "Subject",
                     referenceId: record.subjectId

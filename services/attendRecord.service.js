@@ -55,10 +55,10 @@ const AttendRecordService = {
             }
         },
 
-        // Chỉ giữ những ai vượt quá giới hạn
+        // Chỉ giữ những ai có số lần vắng + 1 >= giới hạn
         {
             $match: {
-            $expr: { $gt: ['$absenceCount', '$maxAbsences'] }
+            $expr: { $gte: [{ $add: ['$absenceCount', 1] }, '$maxAbsences'] }
             }
         },
 
