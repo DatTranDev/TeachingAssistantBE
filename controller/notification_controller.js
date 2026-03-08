@@ -1,46 +1,67 @@
-const { type } = require('os');
-const Notification = require('../model/notification.js');
-const NotificationRecipient = require('../model/notificationRecipient.js');
-const FirebaseService = require('../services/firebase.service.js');
+const { type } = require("os");
+const Notification = require("../model/notification.js");
+const NotificationRecipient = require("../model/notificationRecipient.js");
+const FirebaseService = require("../services/firebase.service.js");
 
 const FcreateNotification = async (notification, recipient, topic) => {
-    try {
-      return await Notification.create(notification).then(async (notification) => {
-        await NotificationRecipient.insertMany(recipient.map((r) => {
-          return { notificationId: notification._id, receiverId: r};
-        }));
+  try {
+    return await Notification.create(notification).then(
+      async (notification) => {
+        await NotificationRecipient.insertMany(
+          recipient.map((r) => {
+            return { notificationId: notification._id, receiverId: r };
+          }),
+        );
         const noti = {
           title: notification.title,
           body: notification.content,
-          type: notification.type
-        }
+          type: notification.type,
+        };
         if (topic) {
           await FirebaseService.sendNotification(noti, topic);
           return notification;
         }
-        if(recipient.length > 0){
+        if (recipient.length > 0) {
           await FirebaseService.sendToSpecificDevice(noti, recipient);
         }
-        return notification
-      });
-    } catch (err) {
-      console.error('Create notification failed:', err);
-      return null;
-    }
+        return notification;
+      },
+    );
+  } catch (err) {
+    console.error("Create notification failed:", err);
+    return null;
+  }
 };
 const getNotification = async (req, res) => {
-    const userId = req.user.userId;
-    const limit = req.query.limit ? req.query.limit : 10;
-    const page = req.query.page ? req.query.page : 1;
-    const skip = (page - 1) * limit;
-    const notifications = await NotificationRecipient
-      .find({receiverId: userId})
-      .populate('notificationId')
-      .sort({createdAt: -1}).skip(skip).limit(limit);
-    return res.status(200).json({   
-      notifications
-    });
-}
+  const userId = req.user.userId;
+  const { page, limit, skip } = req.pagination;
+
+  const filter = { receiverId: userId };
+  if (req.query.isRead !== undefined) {
+    filter.isRead = req.query.isRead === "true";
+  }
+
+  const [notifications, total] = await Promise.all([
+    NotificationRecipient.find(filter)
+      .populate("notificationId")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    NotificationRecipient.countDocuments(filter),
+  ]);
+
+  return res.status(200).json({
+    notifications,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: page * limit < total,
+      hasPrevPage: page > 1,
+    },
+  });
+};
 const getClassCancelNoti = async (req, res) => {
   const userId = req.user.userId;
   const subjectId = req.params.id;
@@ -48,14 +69,16 @@ const getClassCancelNoti = async (req, res) => {
   const page = req.query.page ? req.query.page : 1;
   const skip = (page - 1) * limit;
   const notifications = await Notification.find({
-    type: 'class_cancellation',
-    referenceModel: 'Subject',
-    referenceId: subjectId
-  }).limit(limit).skip(skip);
+    type: "class_cancellation",
+    referenceModel: "Subject",
+    referenceId: subjectId,
+  })
+    .limit(limit)
+    .skip(skip);
   return res.status(200).json({
-    notifications
+    notifications,
   });
-}
+};
 const getClassRescheduleNoti = async (req, res) => {
   const userId = req.user.userId;
   const subjectId = req.params.id;
@@ -63,44 +86,55 @@ const getClassRescheduleNoti = async (req, res) => {
   const page = req.query.page ? req.query.page : 1;
   const skip = (page - 1) * limit;
   const notifications = await Notification.find({
-    type: 'class_reschedule',
-    referenceModel: 'Subject',
-    referenceId: subjectId
-  }).limit(limit).skip(skip);
+    type: "class_reschedule",
+    referenceModel: "Subject",
+    referenceId: subjectId,
+  })
+    .limit(limit)
+    .skip(skip);
   return res.status(200).json({
-    notifications
+    notifications,
   });
-}
+};
 
 const readNotification = async (req, res) => {
-    const userId = req.user.userId;
-    const notificationId = req.params.id;
-    await NotificationRecipient.findOneAndUpdate({receiverId: userId, notificationId: notificationId}, {isRead: true});
-    return res.status(200).json({
-      message: 'Read notification successfully'
-    })
-}
+  const userId = req.user.userId;
+  const notificationId = req.params.id;
+  await NotificationRecipient.findOneAndUpdate(
+    { receiverId: userId, notificationId: notificationId },
+    { isRead: true },
+  );
+  return res.status(200).json({
+    message: "Read notification successfully",
+  });
+};
 const readAllNotification = async (req, res) => {
-    const userId = req.user.userId;
-    await NotificationRecipient.updateMany({receiverId: userId}, {isRead: true});
-    return res.status(200).json({
-      message: 'Read all notification successfully'
-    })
-}
+  const userId = req.user.userId;
+  await NotificationRecipient.updateMany(
+    { receiverId: userId },
+    { isRead: true },
+  );
+  return res.status(200).json({
+    message: "Read all notification successfully",
+  });
+};
 const deleteNotification = async (req, res) => {
-    const userId = req.user.userId;
-    const notificationId = req.params.id;
-    await NotificationRecipient.deleteOne({receiverId: userId, notificationId: notificationId});
-    return res.status(200).json({
-      message: 'Delete notification successfully'
-    })
-  }
+  const userId = req.user.userId;
+  const notificationId = req.params.id;
+  await NotificationRecipient.deleteOne({
+    receiverId: userId,
+    notificationId: notificationId,
+  });
+  return res.status(200).json({
+    message: "Delete notification successfully",
+  });
+};
 module.exports = {
-    FcreateNotification,
-    getNotification,
-    readNotification,
-    readAllNotification,
-    deleteNotification,
-    getClassCancelNoti,
-    getClassRescheduleNoti
+  FcreateNotification,
+  getNotification,
+  readNotification,
+  readAllNotification,
+  deleteNotification,
+  getClassCancelNoti,
+  getClassRescheduleNoti,
 };
