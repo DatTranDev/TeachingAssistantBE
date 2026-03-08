@@ -1,62 +1,114 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const mongoose = require('mongoose');
-const authJwt = require('./middlewares/expressJwt.js');
-const cors = require('cors');
-const morgan = require('morgan');
-const userRoute = require('./route/user_route.js');
-const tokenRoute = require('./route/token_route.js');
-const subjectRoute = require('./route/subject_route.js');
-const classSessionRoute = require('./route/classSession_route.js');
-const questionRoute = require('./route/question_route.js');
-const channelRoute = require('./route/channel_route.js');   
-const cAttendRoute = require('./route/cAttend_route.js');
-const reviewRoute = require('./route/review_route.js');
-const serviceRoute = require('./route/service_route.js');
-const uploadRoute = require('./route/upload_route.js');
-const firebaseRoute = require('./route/firebase_route.js');
-const documentRoute = require('./route/document_route.js');
-const discussionRoute = require('./route/discussion_route.js');
-const absenceRoute = require('./route/absence_route.js');
-const notificationRoute = require('./route/notification_route.js');
-const FirebaseService = require('./services/firebase.service.js');
-const groupRoute = require('./route/group_route.js');
-const systemRoute = require('./route/system_route.js');
+const mongoose = require("mongoose");
+const authJwt = require("./middlewares/expressJwt.js");
+const cors = require("cors");
+const morgan = require("morgan");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const userRoute = require("./route/user_route.js");
+const tokenRoute = require("./route/token_route.js");
+const subjectRoute = require("./route/subject_route.js");
+const classSessionRoute = require("./route/classSession_route.js");
+const questionRoute = require("./route/question_route.js");
+const channelRoute = require("./route/channel_route.js");
+const cAttendRoute = require("./route/cAttend_route.js");
+const reviewRoute = require("./route/review_route.js");
+const serviceRoute = require("./route/service_route.js");
+const uploadRoute = require("./route/upload_route.js");
+const firebaseRoute = require("./route/firebase_route.js");
+const documentRoute = require("./route/document_route.js");
+const discussionRoute = require("./route/discussion_route.js");
+const absenceRoute = require("./route/absence_route.js");
+const notificationRoute = require("./route/notification_route.js");
+const FirebaseService = require("./services/firebase.service.js");
+const groupRoute = require("./route/group_route.js");
+const systemRoute = require("./route/system_route.js");
 
-const ErrorHandler = require('./middlewares/error.middleware.js');
+const ErrorHandler = require("./middlewares/error.middleware.js");
 
-const http = require('http').createServer(app);
+const http = require("http").createServer(app);
 
-require('dotenv').config();
+require("dotenv").config();
 
 const PORT = process.env.PORT;
 const api = process.env.API_URL;
 const url = process.env.ATLAS_URI;
 
 ///Start server///
-mongoose.connect(url).then(
-    res =>{
-        console.log("Connect mongoDB successfully");
-        http.listen(PORT, ()=>{
-                console.log("Listen and run at port: " + PORT)
-        })
-    }
-).catch(
-    err=>{
-        console.log(err)
-    }
-)
-
-app.use(morgan('dev'));
-app.use(cors());
-app.use(express.json());
-app.use(authJwt());
-app.get('/helloworld', (req, res) => {
-    return res.status(200).json({
-        message: "Hello World"
+mongoose
+  .connect(url)
+  .then((res) => {
+    console.log("Connect mongoDB successfully");
+    http.listen(PORT, () => {
+      console.log("Listen and run at port: " + PORT);
     });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
+app.use(morgan("dev"));
+
+// Security headers
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // API-only server
+    crossOriginEmbedderPolicy: false,
+  }),
+);
+
+// CORS
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : ["http://localhost:3000", "http://localhost:3001"]; // Default allowed origins for development
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // Allow mobile apps / curl (no Origin header)
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (/^https?:\/\/([a-z0-9-]+\.)*dattrandev\.id\.vn$/.test(origin))
+        return callback(null, true);
+      callback(new Error(`CORS: Origin ${origin} not allowed`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
+// Rate limiting on auth endpoints
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: "Too many login attempts. Please try again in 15 minutes.",
+  },
 });
 
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: "Too many registration attempts. Please try again later.",
+  },
+});
+
+app.use(express.json());
+app.use(authJwt());
+app.get("/helloworld", (req, res) => {
+  return res.status(200).json({
+    message: "Hello World",
+  });
+});
+
+app.use(`${api}/user/login`, loginLimiter);
+app.use(`${api}/user/register`, registerLimiter);
 app.use(`${api}/user`, userRoute);
 app.use(`${api}/token`, tokenRoute);
 app.use(`${api}/subject`, subjectRoute);
@@ -75,129 +127,131 @@ app.use(`${api}/notification`, notificationRoute);
 app.use(`${api}/group`, groupRoute);
 app.use(`${api}/system`, systemRoute);
 
-app.use(ErrorHandler);  
+app.use(ErrorHandler);
 
 //  Socket
-const { Server } = require('socket.io');
+const { Server } = require("socket.io");
 const io = new Server(http, {
-    cors: {
-        origin: '*',
-    }
+  cors: {
+    origin: "*",
+  },
 });
 let onlineUsers = [];
-io.on('connection', (socket) => {
-    console.log(`${socket.id} connected`);
+io.on("connection", (socket) => {
+  console.log(`${socket.id} connected`);
 
-    socket.on("addOnlineUser", (userID)=>{
-        const check = onlineUsers?.some((user) => user.userID == userID) 
-        if(check){
-         const index = onlineUsers.findIndex((user) => user.userID == userID)
-         onlineUsers[index].socketID = socket.id
-        }else{
-         onlineUsers.push({
-             userID: userID,
-             socketID: socket.id
-         })
-        }
-         
-         console.log(onlineUsers)
-         io.emit("getOnlineUsers", onlineUsers)
-     })
+  socket.on("addOnlineUser", (userID) => {
+    const check = onlineUsers?.some((user) => user.userID == userID);
+    if (check) {
+      const index = onlineUsers.findIndex((user) => user.userID == userID);
+      onlineUsers[index].socketID = socket.id;
+    } else {
+      onlineUsers.push({
+        userID: userID,
+        socketID: socket.id,
+      });
+    }
 
-    socket.on("joinSubject", ({ userID, subjectID }) => {
-        socket.join(subjectID);  
-        console.log(`${userID} joined subject room: ${subjectID}`);
-        
-    });
+    console.log(onlineUsers);
+    io.emit("getOnlineUsers", onlineUsers);
+  });
 
-    socket.on("joinSubjectChannel", ({ userID, subjectID, channelID }) => {
-        const roomName = `${subjectID}_${channelID}`;  
+  socket.on("joinSubject", ({ userID, subjectID }) => {
+    socket.join(subjectID);
+    console.log(`${userID} joined subject room: ${subjectID}`);
+  });
 
-        socket.join(roomName);
-        console.log(`${userID} joined channel room: ${roomName}`);       
-    });
+  socket.on("joinSubjectChannel", ({ userID, subjectID, channelID }) => {
+    const roomName = `${subjectID}_${channelID}`;
 
-    socket.on("sendMessageToSubject", async ({ subjectID, message, dataMsg }) => {
-        io.to(subjectID).emit("receiveSubjectMessage", message);
-        try{
-            await FirebaseService.sendNotification(dataMsg, subjectID)
-        }catch(err){
-            console.log(err)
-        }
-        //console.log(`Message from ${dataMsg.sender} sent to subject room: ${subjectID}`);
-    });
-    socket.on('sendReply', async ({subjectID, message})=>{
-        io.to(subjectID).emit("receiveReply", message);
-    })
-    socket.on('sendVote', async ({subjectID, message})=>{
-        io.to(subjectID).emit("receiveVote", message);
-    })
+    socket.join(roomName);
+    console.log(`${userID} joined channel room: ${roomName}`);
+  });
 
-    socket.on("sendMessageToChannel", async ({ subjectID, channelID, message, dataMsg }) => {
-        const roomName = `${subjectID}_${channelID}`;  
-        io.to(roomName).emit("receiveChannelMessage", message);
-        try{
-            await FirebaseService.sendNotification(dataMsg, subjectID);
-        }catch(err){
-            console.log(err)
-        }
-        //console.log(`Message from ${dataMsg.sender} sent to channel room: ${roomName}`);
-    });
+  socket.on("sendMessageToSubject", async ({ subjectID, message, dataMsg }) => {
+    io.to(subjectID).emit("receiveSubjectMessage", message);
+    try {
+      await FirebaseService.sendNotification(dataMsg, subjectID);
+    } catch (err) {
+      console.log(err);
+    }
+    //console.log(`Message from ${dataMsg.sender} sent to subject room: ${subjectID}`);
+  });
+  socket.on("sendReply", async ({ subjectID, message }) => {
+    io.to(subjectID).emit("receiveReply", message);
+  });
+  socket.on("sendVote", async ({ subjectID, message }) => {
+    io.to(subjectID).emit("receiveVote", message);
+  });
 
-    socket.on("sendReaction", ({ subjectID, messageID, reaction }) => {
-        const roomName = `${subjectID}`;  
-        io.to(roomName).emit("receiveReaction", { messageID, reaction });
-    });
-    socket.on('sendUpdateReaction', ({subjectID, messageID, reaction})=>{
-        const roomName = `${subjectID}`;  
-        io.to(roomName).emit("receiveUpdateReaction", { messageID, reaction });
-    })
-    socket.on('sendAttendance', ({subjectID, student, index, status})=>{
-        const roomName = `${subjectID}`;  
-        io.to(roomName).emit("receiveUserAttendance", {student, index, status});
-    })
-    socket.on('sendUpdateAttendance', ({subjectID, student})=>{
-        const roomName = `${subjectID}`;  
-        io.to(roomName).emit("receiveUpdateAttendance", student);
-    })
-    socket.on('sendResolve', ({subjectID, messageID})=>{
-        const roomName = `${subjectID}`;
-        io.to(roomName).emit("receiveResolve", messageID);
-    })  
-    socket.on('sendDeleteMessage', ({subjectID, messageID})=>{
-        const roomName = `${subjectID}`;
-        io.to(roomName).emit("receiveDeleteMessage", messageID);
-    })
-    socket.on('sendRevokedMessage', ({subjectID, messageID})=>{
-        const roomName = `${subjectID}`;
-        io.to(roomName).emit("receiveRevokedMessage", messageID);
-    })
+  socket.on(
+    "sendMessageToChannel",
+    async ({ subjectID, channelID, message, dataMsg }) => {
+      const roomName = `${subjectID}_${channelID}`;
+      io.to(roomName).emit("receiveChannelMessage", message);
+      try {
+        await FirebaseService.sendNotification(dataMsg, subjectID);
+      } catch (err) {
+        console.log(err);
+      }
+      //console.log(`Message from ${dataMsg.sender} sent to channel room: ${roomName}`);
+    },
+  );
 
-    socket.on("leaveSubjectChannel", ({ userID, subjectID, channelID }) => {
-        const roomName = `${subjectID}_${channelID}`;
-        socket.leave(roomName);
-        console.log(`${userID} left room: ${roomName}`);
+  socket.on("sendReaction", ({ subjectID, messageID, reaction }) => {
+    const roomName = `${subjectID}`;
+    io.to(roomName).emit("receiveReaction", { messageID, reaction });
+  });
+  socket.on("sendUpdateReaction", ({ subjectID, messageID, reaction }) => {
+    const roomName = `${subjectID}`;
+    io.to(roomName).emit("receiveUpdateReaction", { messageID, reaction });
+  });
+  socket.on("sendAttendance", ({ subjectID, student, index, status }) => {
+    const roomName = `${subjectID}`;
+    io.to(roomName).emit("receiveUserAttendance", { student, index, status });
+  });
+  socket.on("sendUpdateAttendance", ({ subjectID, student }) => {
+    const roomName = `${subjectID}`;
+    io.to(roomName).emit("receiveUpdateAttendance", student);
+  });
+  socket.on("sendResolve", ({ subjectID, messageID }) => {
+    const roomName = `${subjectID}`;
+    io.to(roomName).emit("receiveResolve", messageID);
+  });
+  socket.on("sendDeleteMessage", ({ subjectID, messageID }) => {
+    const roomName = `${subjectID}`;
+    io.to(roomName).emit("receiveDeleteMessage", messageID);
+  });
+  socket.on("sendRevokedMessage", ({ subjectID, messageID }) => {
+    const roomName = `${subjectID}`;
+    io.to(roomName).emit("receiveRevokedMessage", messageID);
+  });
 
-    });
-    socket.on("leaveSubject", ({ userID, subjectID }) => {
-        socket.leave(subjectID);
-        console.log(`${userID} left room: ${subjectID}`);
-    });
-    
-    socket.on("attendace", async ({subjectID, dataMsg})=>{
-        io.to(subjectID).emit("receiveAttendance", dataMsg)
-        try{
-            await FirebaseService.sendNotification(dataMsg, subjectID)
-        }catch(err){
-            console.log(err)
-        }
-        console.log(`Attendance from ${dataMsg.sender} sent to subject room: ${subjectID}`);
-    })
+  socket.on("leaveSubjectChannel", ({ userID, subjectID, channelID }) => {
+    const roomName = `${subjectID}_${channelID}`;
+    socket.leave(roomName);
+    console.log(`${userID} left room: ${roomName}`);
+  });
+  socket.on("leaveSubject", ({ userID, subjectID }) => {
+    socket.leave(subjectID);
+    console.log(`${userID} left room: ${subjectID}`);
+  });
 
+  socket.on("attendace", async ({ subjectID, dataMsg }) => {
+    io.to(subjectID).emit("receiveAttendance", dataMsg);
+    try {
+      await FirebaseService.sendNotification(dataMsg, subjectID);
+    } catch (err) {
+      console.log(err);
+    }
+    console.log(
+      `Attendance from ${dataMsg.sender} sent to subject room: ${subjectID}`,
+    );
+  });
 
-    socket.on("disconnect", ()=>{
-        onlineUsers = onlineUsers.filter((user)=> user.socketID !== socket.id)
-        console.log(socket.id, " disconnect")
-        io.emit("getOnlineUsers", onlineUsers)
-    })
+  socket.on("disconnect", () => {
+    onlineUsers = onlineUsers.filter((user) => user.socketID !== socket.id);
+    console.log(socket.id, " disconnect");
+    io.emit("getOnlineUsers", onlineUsers);
+  });
 });

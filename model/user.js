@@ -1,45 +1,56 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const { LANGUAGE, COLOR_MODE } = require("../constants/preferences.js");
 
 const userSchema = new Schema({
-    name: {
-        type: String,
-        required: true,
-    },
-    userCode: {
-        type: String,
-        required: true,
-    },
-    school:{
-        type: String,
-        required: true,
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    password: {
-        type: String,
-        required: true,
-        select: false,
-    },
-    role: {
-        type: String,
-        enum: ['student', 'teacher'],
-        required: true,
-    },
-    avatar: {
-        type: String,
-        default: ''
-    }
+  name: {
+    type: String,
+    required: true,
+  },
+  userCode: {
+    type: String,
+    required: true,
+  },
+  school: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+    select: false,
+  },
+  role: {
+    type: String,
+    enum: ["student", "teacher"],
+    required: true,
+  },
+  avatar: {
+    type: String,
+    default: "",
+  },
+  language: {
+    type: String,
+    enum: Object.values(LANGUAGE),
+    default: LANGUAGE.VI,
+  },
+  colorMode: {
+    type: String,
+    enum: Object.values(COLOR_MODE),
+    default: COLOR_MODE.SYSTEM,
+  },
 });
-userSchema.virtual("id").get(function(){
-    return this._id.toHexString
-})
+userSchema.virtual("id").get(function () {
+  return this._id.toHexString;
+});
 
-userSchema.set('toJSON',{
-    "virtuals": true
-})
-const User = mongoose.model('User', userSchema);
+userSchema.set("toJSON", {
+  virtuals: true,
+});
+const User = mongoose.model("User", userSchema);
 module.exports = User;
