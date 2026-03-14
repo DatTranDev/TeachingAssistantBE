@@ -81,7 +81,7 @@ const findByChannelId = async(req, res)=>{
 
         post = post.toJSON();
         post.user = creator;
-        post.reactions = reactions;
+        //post.reactions = reactions;
         return post;
     }));
     results.posts = postsWithCreator;

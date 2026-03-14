@@ -22,6 +22,7 @@ const notificationRoute = require('./route/notification_route.js');
 const FirebaseService = require('./services/firebase.service.js');
 const groupRoute = require('./route/group_route.js');
 const systemRoute = require('./route/system_route.js');
+const aiRoute = require('./route/ai_route.js');
 
 const ErrorHandler = require('./middlewares/error.middleware.js');
 
@@ -48,7 +49,13 @@ mongoose.connect(url).then(
 )
 
 app.use(morgan('dev'));
-app.use(cors());
+app.use(cors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.options('*', cors()); // handle preflight for all routes
 app.use(express.json());
 app.use(authJwt());
 app.get('/helloworld', (req, res) => {
@@ -74,6 +81,7 @@ app.use(`${api}/absence`, absenceRoute);
 app.use(`${api}/notification`, notificationRoute);
 app.use(`${api}/group`, groupRoute);
 app.use(`${api}/system`, systemRoute);
+app.use(`${api}/ai`, aiRoute);
 
 app.use(ErrorHandler);  
 

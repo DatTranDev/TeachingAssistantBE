@@ -50,7 +50,7 @@ const FirebaseService = {
         return images;
     },
     uploadFile: async(file, data) => {
-        const downloadURL = await this.getURL(file);
+        const downloadURL = await FirebaseService.getURL(file);
         const doc = {
             name: data.name,
             dowloadUrl: downloadURL,

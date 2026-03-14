@@ -123,4 +123,23 @@ const changePassword = async(req, res)=>{
 
 
 
-module.exports = {register, login, updateUser, changePassword}
+const getMe = async(req, res)=>{
+    try {
+        const userId = req.user.userId;
+        const existUser = await User.findById(userId).select('-password');
+        if(!existUser){
+            return res.status(404).json({
+                message: "User is not found"
+            });
+        }
+        return res.status(200).json({
+            user: existUser
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Internal server error: " + error
+        });
+    }
+};
+
+module.exports = {register, login, updateUser, changePassword, getMe}
