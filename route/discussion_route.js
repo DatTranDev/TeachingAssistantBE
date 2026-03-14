@@ -1,16 +1,39 @@
-const express = require('express');
+const express = require("express");
 const route = express.Router();
-const discussionController = require('../controller/discussion_controller.js');
-const reactionController = require('../controller/reaction_controller.js');
-const auth = require('../middlewares/auth.middleware.js');
+const discussionController = require("../controller/discussion_controller.js");
+const reactionController = require("../controller/reaction_controller.js");
+const auth = require("../middlewares/auth.middleware.js");
+const { paginate } = require("../middlewares/pagination.middleware.js");
 
-route.post('/add', discussionController.createDiscussion);
-route.patch('/update/:id', discussionController.updateDiscussion);
-route.delete('/delete/:id', discussionController.deleteDiscussion);
-route.get('/findByCAttend/:cAttendId', discussionController.findByCAttendId);
-route.post('/reaction/add', reactionController.createReaction);
-route.patch('/reaction/update/:id', reactionController.updateReaction);
-route.get('/:discussionId/reactions', reactionController.findByDiscussionId);
-route.post('/:id/vote', auth, discussionController.voteDiscussion);
+const {
+  handleValidationErrors,
+} = require("../middlewares/validate.middleware.js");
+const {
+  createDiscussionValidator,
+  updateDiscussionValidator,
+} = require("../validators/discussion.validator.js");
+
+route.post(
+  "/add",
+  createDiscussionValidator,
+  handleValidationErrors,
+  discussionController.createDiscussion,
+);
+route.patch(
+  "/update/:id",
+  updateDiscussionValidator,
+  handleValidationErrors,
+  discussionController.updateDiscussion,
+);
+route.delete("/delete/:id", discussionController.deleteDiscussion);
+route.get(
+  "/findByCAttend/:cAttendId",
+  paginate(20),
+  discussionController.findByCAttendId,
+);
+route.post("/reaction/add", reactionController.createReaction);
+route.patch("/reaction/update/:id", reactionController.updateReaction);
+route.get("/:discussionId/reactions", reactionController.findByDiscussionId);
+route.post("/:id/vote", auth, discussionController.voteDiscussion);
 
 module.exports = route;

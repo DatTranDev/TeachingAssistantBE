@@ -1,29 +1,44 @@
-const express = require('express');
+const express = require("express");
 const route = express.Router();
-const groupController = require('../controller/group_controller.js');
-const groupMessageController = require('../controller/groupMessage_controller.js');
-const auth = require('../middlewares/auth.middleware.js');
+const groupController = require("../controller/group_controller.js");
+const groupMessageController = require("../controller/groupMessage_controller.js");
+const auth = require("../middlewares/auth.middleware.js");
+const {
+  handleValidationErrors,
+} = require("../middlewares/validate.middleware.js");
+const {
+  createGroupMessageValidator,
+  updateGroupMessageValidator,
+} = require("../validators/groupMessage.validator.js");
 
-route.post('/random/create',auth, groupController.createRandomGroup);
-route.get('/cAttend/:cAttendId', groupController.getGroupByCAttendId);
-route.post('/join/:groupId', auth, groupController.joinGroup);
-route.post('/create', auth, groupController.createGroup);
-route.patch('/update/:id', auth, groupController.updateGroup);
-route.get('/default/all/:subjectId', auth, groupController.getDefaultGroups);
-route.get('/random/all/:cAttendId', auth, groupController.getRandomGroups);
-route.get('/default/:subjectId', auth, groupController.getUserDefaultGroup);
-route.get('/random/:subjectId', auth, groupController.getUserRandomGroups);
-route.delete('/leave/:groupId', auth, groupController.leaveGroup);
-route.delete('/randoms/:cAttendId', auth, groupController.deleteRandomGroups);
-
+route.post("/random/create", auth, groupController.createRandomGroup);
+route.get("/cAttend/:cAttendId", groupController.getGroupByCAttendId);
+route.post("/join/:groupId", auth, groupController.joinGroup);
+route.post("/create", auth, groupController.createGroup);
+route.patch("/update/:id", auth, groupController.updateGroup);
+route.get("/default/all/:subjectId", auth, groupController.getDefaultGroups);
+route.get("/random/all/:cAttendId", auth, groupController.getRandomGroups);
+route.get("/default/:subjectId", auth, groupController.getUserDefaultGroup);
+route.get("/random/:subjectId", auth, groupController.getUserRandomGroups);
+route.delete("/leave/:groupId", auth, groupController.leaveGroup);
+route.delete("/randoms/:cAttendId", auth, groupController.deleteRandomGroups);
 
 // Group message routes
-route.post('/message/create', groupMessageController.createGroupMessage);
-route.get('/:groupId/message/', groupMessageController.getByGroupId);
-route.patch('/message/update/:id', groupMessageController.updateGroupMessage);
-route.delete('/message/delete/:id', groupMessageController.deleteGroupMessage);
+route.post(
+  "/message/create",
+  createGroupMessageValidator,
+  handleValidationErrors,
+  groupMessageController.createGroupMessage,
+);
+route.get("/:groupId/message/", groupMessageController.getByGroupId);
+route.patch(
+  "/message/update/:id",
+  updateGroupMessageValidator,
+  handleValidationErrors,
+  groupMessageController.updateGroupMessage,
+);
+route.delete("/message/delete/:id", groupMessageController.deleteGroupMessage);
 
-route.post('/crossPairs', auth, groupController.notifyCrossGradingPairs);
+route.post("/crossPairs", auth, groupController.notifyCrossGradingPairs);
 
 module.exports = route;
-
