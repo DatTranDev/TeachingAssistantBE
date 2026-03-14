@@ -16,6 +16,11 @@ const aiUsageLogSchema = new Schema({
         type: String,
         default: 'chat'
     },
+    provider: {
+        type: String,
+        enum: ['gemini', 'openai'],
+        default: 'gemini'
+    },
     prompt: {
         type: String,
         required: true

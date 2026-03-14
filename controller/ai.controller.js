@@ -1,5 +1,6 @@
 const { chat, getHistory } = require('../services/ai.service');
 const { seedDocumentation } = require('../services/rag.service');
+const User = require('../model/user');
 
 /**
  * POST /api/v1/ai/chat
@@ -20,7 +21,10 @@ const aiChat = async (req, res, next) => {
             return res.status(401).json({ error: 'Unauthorized.' });
         }
 
-        const reply = await chat(message.trim(), userId, role);
+        const user = await User.findById(userId).lean();
+        const preferredLanguage = req.body.language || user?.language || 'vi';
+
+        const reply = await chat(message.trim(), userId, role, preferredLanguage);
         return res.status(200).json({ reply });
 
     } catch (err) {
@@ -29,20 +33,6 @@ const aiChat = async (req, res, next) => {
     }
 };
 
-/**
- * POST /api/v1/ai/seed
- * Admin-only: seeds schema documentation into Supabase for RAG.
- * Only needs to be called once.
- */
-const seedDocs = async (req, res, next) => {
-    try {
-        await seedDocumentation();
-        return res.status(200).json({ message: 'Documentation seeded successfully.' });
-    } catch (err) {
-        console.error('[AI Seed Error]', err);
-        next(err);
-    }
-};
 
 const getChatHistory = async (req, res, next) => {
     try {
@@ -51,7 +41,7 @@ const getChatHistory = async (req, res, next) => {
             return res.status(401).json({ error: 'Unauthorized.' });
         }
 
-        const history = await getHistory(userId);
+        const { history } = await getHistory(userId, req.query.language || 'vi');
         return res.status(200).json({ history });
     } catch (err) {
         console.error('[AI Get History Error]', err);
@@ -59,4 +49,4 @@ const getChatHistory = async (req, res, next) => {
     }
 };
 
-module.exports = { aiChat, seedDocs, getChatHistory };
+module.exports = { aiChat, getChatHistory };

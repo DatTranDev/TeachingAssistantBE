@@ -253,28 +253,45 @@ async function seedDocumentation() {
         try {
             const embedding = await generateEmbedding(doc.content);
 
-            // Check if already seeded (by metadata table name)
-            const { data: existing } = await supabase
-                .from('documents')
-                .select('id')
-                .eq('metadata->>table', doc.metadata.table)
-                .single();
-
-            if (existing) {
-                console.log(`  ↩︎ Skipping ${doc.metadata.table} (already seeded)`);
-                continue;
-            }
-
-            const { error } = await supabase.from('documents').insert({
+            // Upsert based on table name in metadata
+            const { error } = await supabase.from('documents').upsert({
                 content: doc.content,
                 metadata: doc.metadata,
                 embedding
+            }, { 
+                onConflict: 'metadata->>table' 
             });
 
             if (error) {
-                console.error(`  ✗ Failed to seed ${doc.metadata.table}:`, error.message);
+                // If the unique constraint on metadata->>table doesn't exist, we fallback to manual update
+                if (error.code === '42703' || error.message.includes('column') || error.message.includes('unique')) {
+                    const { data: existing } = await supabase
+                        .from('documents')
+                        .select('id')
+                        .eq('metadata->>table', doc.metadata.table)
+                        .single();
+
+                    if (existing) {
+                        const { error: updateError } = await supabase
+                            .from('documents')
+                            .update({ content: doc.content, embedding })
+                            .eq('id', existing.id);
+                        
+                        if (updateError) throw updateError;
+                        console.log(`  ✓ Updated ${doc.metadata.table}`);
+                    } else {
+                        const { error: insertError } = await supabase
+                            .from('documents')
+                            .insert({ content: doc.content, metadata: doc.metadata, embedding });
+                        
+                        if (insertError) throw insertError;
+                        console.log(`  ✓ Seeded ${doc.metadata.table}`);
+                    }
+                } else {
+                    console.error(`  ✗ Failed to sync ${doc.metadata.table}:`, error.message);
+                }
             } else {
-                console.log(`  ✓ Seeded ${doc.metadata.table}`);
+                console.log(`  ✓ Synced ${doc.metadata.table}`);
             }
         } catch (err) {
             console.error(`  ✗ Error seeding ${doc.metadata.table}:`, err.message);

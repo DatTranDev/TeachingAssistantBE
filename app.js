@@ -30,6 +30,7 @@ const ErrorHandler = require("./middlewares/error.middleware.js");
 
 const http = require("http").createServer(app);
 
+const { seedDocumentation } = require("./services/rag.service.js");
 require("dotenv").config();
 
 const PORT = process.env.PORT;
@@ -44,6 +45,8 @@ mongoose
     http.listen(PORT, () => {
       console.log("Listen and run at port: " + PORT);
     });
+    // Automate Knowledge Base seeding on startup (WEB-013)
+    seedDocumentation().catch(err => console.error("Auto-seeding failed:", err));
   })
   .catch((err) => {
     console.log(err);
