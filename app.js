@@ -25,6 +25,8 @@ const FirebaseService = require("./services/firebase.service.js");
 const groupRoute = require("./route/group_route.js");
 const systemRoute = require("./route/system_route.js");
 const aiRoute = require("./route/ai_route.js");
+const noteRoute = require("./route/note_route.js");
+const fileRoute = require("./route/file_route.js");
 
 const ErrorHandler = require("./middlewares/error.middleware.js");
 
@@ -131,6 +133,8 @@ app.use(`${api}/notification`, notificationRoute);
 app.use(`${api}/group`, groupRoute);
 app.use(`${api}/system`, systemRoute);
 app.use(`${api}/ai`, aiRoute);
+app.use(`${api}/note`, noteRoute);
+app.use(`${api}/file-storage`, fileRoute);
 
 app.use(ErrorHandler);
 
@@ -259,4 +263,17 @@ io.on("connection", (socket) => {
     console.log(socket.id, " disconnect");
     io.emit("getOnlineUsers", onlineUsers);
   });
+});
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err) => {
+  console.error("UNHANDLED REJECTION! 💥 Shutting down...");
+  console.error(err.name, err.message);
+  // Optional: http.close(() => process.exit(1));
+});
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION! 💥 Shutting down...");
+  console.error(err.name, err.message);
+  // process.exit(1);
 });

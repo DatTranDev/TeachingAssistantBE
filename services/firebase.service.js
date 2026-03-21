@@ -172,7 +172,19 @@ const FirebaseService = {
           throw new AppError(err.message, 500);
         })
         const downloadURL = await getDownloadURL(storageRef)
-        return downloadURL;
+        return {
+            url: downloadURL,
+            path: `files/${newFileName}`
+        };
+    },
+    deleteFromStorage: async(path) => {
+        try {
+            await bucket.file(path).delete();
+            return true;
+        } catch (err) {
+            console.error('Error deleting file from storage:', err);
+            throw new AppError('Failed to delete file from storage', 500);
+        }
     }
 }
 module.exports = FirebaseService;

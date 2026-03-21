@@ -276,7 +276,7 @@ ${context || 'No specific documentation matched. Use general knowledge of the sy
             }));
 
             const model = genAI.getGenerativeModel({
-                model: 'gemini-2.0-flash',
+                model: 'gemini-2.5-flash',
                 tools: getGeminiTools(),
                 systemInstruction: systemPrompt
             });

@@ -44,7 +44,16 @@ const userSchema = new Schema({
     enum: Object.values(COLOR_MODE),
     default: COLOR_MODE.SYSTEM,
   },
-});
+  address: {
+    line1: String,
+    city: String,
+    state: String,
+    postalCode: String,
+    country: String,
+  },
+  timezone: String,
+  country: String,
+}, { timestamps: true });
 userSchema.virtual("id").get(function () {
   return this._id.toHexString;
 });

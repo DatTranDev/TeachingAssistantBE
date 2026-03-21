@@ -1,3 +1,4 @@
+const axios = require("axios");
 const User = require("../model/user.js");
 const bcrypt = require("../utils/hash.js");
 const TokenHelper = require("../utils/token.js");
@@ -41,6 +42,24 @@ const register = async (req, res) => {
     "refresh",
   );
   await TokenService.addNewToken(refreshToken, newUser._id);
+
+  // Billing Service: Setup Free Tier
+  try {
+    const billingUrl = process.env.BILLING_SERVICE_URL;
+    await axios.post(`${billingUrl}/setup-free-tier`, {
+      userId: newUser._id.toString(),
+      email: newUser.email,
+      firstName: newUser.name.split(" ")[0] || "",
+      lastName: newUser.name.split(" ").slice(1).join(" ") || "",
+      address: newUser.address || {},
+      timezone: newUser.timezone || "",
+      country: newUser.country || "",
+    });
+  } catch (err) {
+    console.error("Failed to setup free tier in billing service:", err.message);
+    // We don't block registration if billing fails, but we should log it
+  }
+
   return res.status(201).json({
     user: resUser,
     accessToken: accessToken,
@@ -107,6 +126,34 @@ const updateUser = async (req, res) => {
       message: "Internal server error: " + err,
     });
   });
+
+  // Billing Service: Sync Customer Data
+  const hasGeographicUpdate =
+    req.body.address ||
+    req.body.timezone ||
+    req.body.country ||
+    req.body.name ||
+    req.body.email;
+  if (hasGeographicUpdate) {
+    try {
+      const billingUrl = process.env.BILLING_SERVICE_URL;
+      const user = await User.findById(id);
+      await axios.post(`${billingUrl}/sync-customer`, {
+        userId: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        address: user.address,
+        timezone: user.timezone,
+        country: user.country,
+      });
+    } catch (err) {
+      console.error(
+        "Failed to sync customer data with billing service:",
+        err.message,
+      );
+    }
+  }
+
   return res.status(200).json({
     message: "Updated successfully",
   });
