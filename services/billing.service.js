@@ -2,6 +2,14 @@ const axios = require("axios");
 
 const BILLING_SERVICE_URL = process.env.BILLING_SERVICE_URL;
 
+const buildAuthHeaders = (authorizationHeader) => {
+  if (!authorizationHeader || typeof authorizationHeader !== "string") {
+    return {};
+  }
+
+  return { Authorization: authorizationHeader };
+};
+
 /**
  * Checks if a user has sufficient credits or quota for an action.
  * @param {string} userId
@@ -9,16 +17,17 @@ const BILLING_SERVICE_URL = process.env.BILLING_SERVICE_URL;
  * @param {number} amount - amount to check (e.g. 1 for AI, or bytes for storage)
  * @returns {Promise<boolean>}
  */
-const checkUsage = async (userId, type, amount = 1) => {
+const checkUsage = async (userId, type, amount = 1, authorizationHeader) => {
   try {
     const response = await axios.get(`${BILLING_SERVICE_URL}/check-usage`, {
       params: { userId, type, amount },
+      headers: buildAuthHeaders(authorizationHeader),
     });
-    return response.data.allowed;
+    return response.data.allowed ?? response.status === 200;
   } catch (err) {
     console.error(
       "[Billing Integration Error] checkUsage failed:",
-      err.message,
+      err.response?.status || err.message,
     );
     // Fallback to true in case of service failure to not block users?
     // Or false for strict enforcement. Given it's a billing service, usually we should block or have a circuit breaker.
@@ -28,20 +37,43 @@ const checkUsage = async (userId, type, amount = 1) => {
 };
 
 /**
- * Deducts credits from a user's balance.
+ * Consumes usage and records usage log in billing service.
  * @param {string} userId
- * @param {number} amount - amount of AI credits to deduct
+ * @param {string} type - e.g. 'ai_credits' or 'storage'
+ * @param {number} amount
+ * @param {string} authorizationHeader
+ * @param {string} description
  * @returns {Promise<void>}
  */
-const deductCredits = async (userId, amount = 1) => {
-  try {
-    await axios.post(`${BILLING_SERVICE_URL}/deduct`, { userId, amount });
-  } catch (err) {
-    console.error(
-      "[Billing Integration Error] deductCredits failed:",
-      err.message,
-    );
+const consumeUsage = async (
+  userId,
+  type,
+  amount = 1,
+  authorizationHeader,
+  description,
+) => {
+  const response = await axios.post(
+    `${BILLING_SERVICE_URL}/deduct`,
+    { userId, type, amount, description },
+    { headers: buildAuthHeaders(authorizationHeader) },
+  );
+
+  if (response.status !== 200 || response.data?.status !== "ok") {
+    throw new Error("Billing usage consumption failed");
   }
 };
 
-module.exports = { checkUsage, deductCredits };
+/**
+ * Backward-compatible wrapper for AI usage consumption.
+ */
+const deductCredits = async (userId, amount = 1, authorizationHeader) => {
+  await consumeUsage(
+    userId,
+    "ai_credits",
+    amount,
+    authorizationHeader,
+    "ai chat usage",
+  );
+};
+
+module.exports = { checkUsage, consumeUsage, deductCredits };

@@ -1,25 +1,43 @@
 const File = require("../model/file.js");
 const FirebaseService = require("../services/firebase.service.js");
 const { BadRequestError, NotFoundError } = require("../utils/AppError.js");
-const { checkUsage } = require("../services/billing.service");
+const { checkUsage, consumeUsage } = require("../services/billing.service");
 
 const uploadFile = async (req, res, next) => {
+  let uploadedPath = null;
   try {
     const file = req.file;
     if (!file) throw new BadRequestError("No file in the request");
 
     const userId = req.auth.userId;
+    const authorizationHeader = req.headers?.authorization;
 
     // Billing Check (Storage)
-    const isAllowed = await checkUsage(userId, 'storage', file.size);
+    const isAllowed = await checkUsage(
+      userId,
+      "storage",
+      file.size,
+      authorizationHeader,
+    );
     if (!isAllowed) {
-        throw new BadRequestError("Insufficient storage quota. Please upgrade your plan.");
+      throw new BadRequestError(
+        "Insufficient storage quota. Please upgrade your plan.",
+      );
     }
 
     const fileName = req.body.name || file.originalname;
 
     // Upload to Firebase
     const { url, path } = await FirebaseService.getURL(file);
+    uploadedPath = path;
+
+    await consumeUsage(
+      userId,
+      "storage",
+      file.size,
+      authorizationHeader,
+      "file upload",
+    );
 
     const newFile = new File({
       userId: userId,
@@ -37,6 +55,13 @@ const uploadFile = async (req, res, next) => {
       file: newFile,
     });
   } catch (err) {
+    if (uploadedPath) {
+      try {
+        await FirebaseService.deleteFromStorage(uploadedPath);
+      } catch (cleanupErr) {
+        console.error("[File Upload Rollback Error]", cleanupErr);
+      }
+    }
     next(err);
   }
 };
