@@ -16,6 +16,7 @@ const ReactionService = require("../services/reaction.service.js");
 const ReviewService = require("../services/review.service.js");
 const AttendRecordService = require("../services/attendRecord.service.js");
 const helper = require("../utils/helper.js");
+const RedisService = require("../services/redis.service.js");
 
 const addSubject = async (req, res) => {
   const userIdFromToken = req.user.userId;
@@ -315,7 +316,9 @@ const updateSubject = async (req, res) => {
     });
   }
   await Subject.findByIdAndUpdate(req.params.id, req.body)
-    .then((subject) => {
+    .then(async (subject) => {
+      // Invalidate cache
+      await RedisService.del(`subject:${req.params.id}`);
       return res.status(200).json({
         message: "Subject is updated successfully",
       });
@@ -420,7 +423,9 @@ const deleteSubject = async (req, res) => {
   });
 
   await Subject.findByIdAndDelete(req.params.id)
-    .then(() => {
+    .then(async () => {
+      // Invalidate cache
+      await RedisService.del(`subject:${req.params.id}`);
       return res.status(200).json({
         message: "Subject is deleted successfully",
       });
@@ -560,19 +565,30 @@ const findSubjectById = async (req, res) => {
       message: "Invalid subject id",
     });
   }
-  const subject = await Subject.findById(req.params.id);
-  if (!subject) {
-    return res.status(404).json({
-      message: "Subject is not found",
+
+  try {
+    const cacheKey = `subject:${req.params.id}`;
+    const result = await RedisService.getOrSet(cacheKey, async () => {
+      const subject = await Subject.findById(req.params.id);
+      if (!subject) return null;
+      const classSessions = await ClassSession.find({
+        subjectId: req.params.id,
+      });
+      return { subject, classSessions };
+    });
+
+    if (!result) {
+      return res.status(404).json({
+        message: "Subject is not found",
+      });
+    }
+
+    return res.status(200).json(result);
+  } catch (err) {
+    return res.status(500).json({
+      message: "Internal server error: " + err,
     });
   }
-  const classSessions = await ClassSession.find({
-    subjectId: req.params.id,
-  });
-  return res.status(200).json({
-    subject: subject,
-    classSessions: classSessions,
-  });
 };
 const getClassSessions = async (id) => {
   const classSession = await ClassSession.findById(id);

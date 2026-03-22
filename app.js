@@ -8,6 +8,8 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const userRoute = require("./route/user_route.js");
 const tokenRoute = require("./route/token_route.js");
+const { RedisStore } = require("rate-limit-redis");
+const redisClient = require("./config/redis.js");
 const subjectRoute = require("./route/subject_route.js");
 const classSessionRoute = require("./route/classSession_route.js");
 const questionRoute = require("./route/question_route.js");
@@ -85,11 +87,16 @@ app.use(
 );
 
 // Rate limiting on auth endpoints
+const limiterStore = new RedisStore({
+  sendCommand: (...args) => redisClient.sendCommand(args),
+});
+
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  store: limiterStore,
   message: {
     message: "Too many login attempts. Please try again in 15 minutes.",
   },
@@ -100,6 +107,7 @@ const registerLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
+  store: limiterStore,
   message: {
     message: "Too many registration attempts. Please try again later.",
   },
