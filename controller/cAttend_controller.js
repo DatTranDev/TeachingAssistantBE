@@ -357,6 +357,11 @@ const resetAttendance = async (req, res) => {
     });
   }
   const userIdFromToken = req.user.userId;
+  if (!existCAttend.classSessionId || !existCAttend.classSessionId.subjectId) {
+    return res.status(500).json({
+      message: "Data integrity error: Class session or subject not found",
+    });
+  }
   if (existCAttend.classSessionId.subjectId.hostId != userIdFromToken) {
     return res.status(403).json({
       message: "Unauthorized action",
@@ -452,6 +457,11 @@ const updateAcceptedNumber = async (req, res) => {
   }
   const existCAttend = await CAttend.findOne({
     _id: req.params.cAttendId,
+  }).populate({
+    path: "classSessionId",
+    populate: {
+      path: "subjectId",
+    },
   });
   if (!existCAttend) {
     return res.status(404).json({
@@ -459,6 +469,11 @@ const updateAcceptedNumber = async (req, res) => {
     });
   }
   const userIdFromToken = req.user.userId;
+  if (!existCAttend.classSessionId || !existCAttend.classSessionId.subjectId) {
+    return res.status(500).json({
+      message: "Data integrity error: Class session or subject not found",
+    });
+  }
   if (existCAttend.classSessionId.subjectId.hostId != userIdFromToken) {
     return res.status(403).json({
       message: "Unauthorized action",
